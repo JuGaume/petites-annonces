@@ -42,6 +42,21 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         Assert.Equal(request.Email, me!.Email);
     }
 
+    [Theory]
+    [InlineData("not-an-email")]
+    [InlineData("missing-domain@")]
+    [InlineData("@missing-local.com")]
+    [InlineData("no-at-sign.example.com")]
+    public async Task Register_With_Invalid_Email_Format_Fails(string invalidEmail)
+    {
+        var client = _factory.CreateClient();
+        var request = NewRegisterRequest() with { Email = invalidEmail };
+
+        var response = await client.PostAsJsonAsync("/auth/register", request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Fact]
     public async Task Register_With_Existing_Email_Fails()
     {

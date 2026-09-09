@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -33,6 +34,11 @@ public class AuthController(
             || string.IsNullOrWhiteSpace(request.DisplayName))
         {
             return ValidationProblem("Email, mot de passe et nom affiché sont requis.");
+        }
+
+        if (!new EmailAddressAttribute().IsValid(request.Email))
+        {
+            return ValidationProblem("Adresse email invalide.");
         }
 
         var user = new ApplicationUser

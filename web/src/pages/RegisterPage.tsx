@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ApiError } from '../lib/apiClient'
+import { isValidEmail } from '../lib/validation'
 import { GoogleSignInButton } from '../components/GoogleSignInButton'
 
 export function RegisterPage() {
@@ -16,6 +17,12 @@ export function RegisterPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
+
+    if (!isValidEmail(email)) {
+      setError('Adresse email invalide.')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       await register(email, password, displayName)
