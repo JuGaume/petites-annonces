@@ -7,6 +7,15 @@ Le plan est découpé en phases livrables indépendamment testables, dans l'ordr
 doivent être construites. Chaque phase se termine dans un état fonctionnel et testé
 avant de passer à la suivante.
 
+## Note sur le graphisme
+
+Pas de maquettes séparées avant le code : le design se fait directement en React/
+Tailwind, avec une direction visuelle inspirée de l'esprit Leboncoin (cartes d'annonces
+simples et lisibles, accent chaleureux, UI fonctionnelle et épurée plutôt que
+décorative). Une petite charte (couleurs, typographie, espacements) est posée dès la
+Phase 0 pour garder les écrans cohérents entre eux. Des captures d'écran sont partagées
+au fil de la Phase 3 (annonces) pour validation/ajustement du rendu.
+
 ## Phase 0 — Squelette du projet
 
 **Objectif :** un repo qui compile et se lance, vide de logique métier.
