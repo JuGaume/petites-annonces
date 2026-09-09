@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/*
+ * Petite charte visuelle — esprit "petites annonces" : sobre, fonctionnel,
+ * accent chaleureux sur les actions principales. Ajustée au fil de la Phase 3.
+ */
+:root {
+  --color-accent: #ea580c;
+  --color-accent-hover: #c2410c;
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}

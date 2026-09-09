@@ -25,8 +25,10 @@ au fil de la Phase 3 (annonces) pour validation/ajustement du rendu.
 - Projet React : `web/` (Vite + TypeScript + React Router + Tailwind)
 - Dossier `landing/` pour la page publique statique (Vite en mode SSG, ou simple HTML/CSS
   si plus rapide à livrer)
-- `docker-compose.yml` local pour dev : SQL Server/PostgreSQL local + Azurite (émulateur
-  Blob Storage) — évite de dépendre d'Azure pour développer
+- Dev local sans Docker (non installé sur la machine) : **SQL Server LocalDB** (déjà
+  présent) pour la base de données, et un `ILocalOrAzureBlobStorageService` avec une
+  implémentation disque local pour le dev / Azure Blob Storage pour la prod — évite de
+  dépendre d'un conteneur pour développer
 - `.gitignore`, `README.md` (comment lancer le projet en local)
 - CI GitHub Actions minimal : build API + build web sur chaque push (pas encore de
   déploiement)

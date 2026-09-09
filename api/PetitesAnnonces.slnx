@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PetitesAnnonces.Api/PetitesAnnonces.Api.csproj" />
+  <Project Path="PetitesAnnonces.Tests/PetitesAnnonces.Tests.csproj" />
+</Solution>
