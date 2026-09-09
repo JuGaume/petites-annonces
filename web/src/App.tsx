@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 type HealthStatus = 'checking' | 'ok' | 'error'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5083'
 
 function App() {
   const [apiStatus, setApiStatus] = useState<HealthStatus>('checking')

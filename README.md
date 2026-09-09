@@ -42,5 +42,5 @@ npm install
 npm run dev
 ```
 
-Par défaut le front attend l'API sur `http://localhost:5000` (voir
+Par défaut le front attend l'API sur `http://localhost:5083` (voir
 `VITE_API_BASE_URL` pour changer).
