@@ -46,6 +46,56 @@ export interface InvitationPreviewResponse {
   isValid: boolean
 }
 
+export interface CategoryResponse {
+  id: number
+  name: string
+}
+
+export type ListingMode = 'Sale' | 'Donation' | 'Trade'
+export type ListingStatus = 'Available' | 'Reserved' | 'Sold'
+export type ContactMode = 'InternalMessaging' | 'DirectContact'
+
+export interface ListingImageResponse {
+  id: number
+  url: string
+  thumbnailUrl: string
+}
+
+export interface ListingSummaryResponse {
+  id: number
+  title: string
+  price: number | null
+  mode: ListingMode
+  status: ListingStatus
+  categoryName: string
+  thumbnailUrl: string | null
+  createdAt: string
+}
+
+export interface ListingDetailResponse {
+  id: number
+  title: string
+  description: string | null
+  price: number | null
+  mode: ListingMode
+  status: ListingStatus
+  categoryId: number
+  categoryName: string
+  authorUserId: string
+  authorDisplayName: string
+  contactMode: ContactMode
+  contactDetails: string | null
+  createdAt: string
+  images: ListingImageResponse[]
+}
+
+export interface PagedResult<T> {
+  items: T[]
+  page: number
+  pageSize: number
+  totalCount: number
+}
+
 export class ApiError extends Error {
   status: number
 
@@ -72,7 +122,9 @@ export async function apiFetch(path: string, init: RequestInit = {}, retry = tru
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`)
   }
-  if (init.body && !headers.has('Content-Type')) {
+  // Un corps FormData (upload de photos) doit garder son Content-Type multipart
+  // avec la boundary générée par le navigateur : ne jamais le forcer en JSON.
+  if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
 

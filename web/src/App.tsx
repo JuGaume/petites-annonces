@@ -1,9 +1,12 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { CreateListingPage } from './pages/CreateListingPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
 import { HomePage } from './pages/HomePage'
 import { JoinGroupPage } from './pages/JoinGroupPage'
+import { ListingDetailPage } from './pages/ListingDetailPage'
+import { ListingsFeedPage } from './pages/ListingsFeedPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 
@@ -30,6 +33,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <GroupDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groups/:groupId/listings"
+            element={
+              <ProtectedRoute>
+                <ListingsFeedPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groups/:groupId/listings/new"
+            element={
+              <ProtectedRoute>
+                <CreateListingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/groups/:groupId/listings/:listingId"
+            element={
+              <ProtectedRoute>
+                <ListingDetailPage />
               </ProtectedRoute>
             }
           />

@@ -5,10 +5,16 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using FluentValidation;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using PetitesAnnonces.Api.Auth;
+using PetitesAnnonces.Api.Contracts;
 using PetitesAnnonces.Api.Data;
 using PetitesAnnonces.Api.Email;
 using PetitesAnnonces.Api.Models;
+using PetitesAnnonces.Api.Storage;
+using PetitesAnnonces.Api.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +102,21 @@ else
     builder.Services.AddSingleton<IEmailSender, SendGridEmailSender>();
 }
 
+builder.Services.Configure<BlobStorageOptions>(builder.Configuration.GetSection(BlobStorageOptions.SectionName));
+// Sans chaîne de connexion Azure Storage configurée (dev/tests), les photos sont
+// enregistrées sur le disque de l'API plutôt que de dépendre d'un conteneur (Azurite).
+var useAzureBlobStorage = !string.IsNullOrWhiteSpace(builder.Configuration[$"{BlobStorageOptions.SectionName}:AzureConnectionString"]);
+if (useAzureBlobStorage)
+{
+    builder.Services.AddSingleton<IBlobStorageService, AzureBlobStorageService>();
+}
+else
+{
+    builder.Services.AddScoped<IBlobStorageService, LocalDiskBlobStorageService>();
+}
+
+builder.Services.AddScoped<IValidator<CreateListingRequest>, CreateListingRequestValidator>();
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -141,6 +162,19 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+if (!useAzureBlobStorage)
+{
+    var blobOptions = app.Services.GetRequiredService<IOptions<BlobStorageOptions>>().Value;
+    var localUploadsRoot = Path.Combine(app.Environment.ContentRootPath, blobOptions.LocalRootPath);
+    Directory.CreateDirectory(localUploadsRoot);
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(localUploadsRoot),
+        RequestPath = blobOptions.LocalRequestPath,
+    });
+}
 
 app.UseCors(FrontendCorsPolicy);
 

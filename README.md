@@ -74,6 +74,20 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   renseigner `SendGrid:ApiKey` (et éventuellement `SendGrid:FromEmail`/`FromName`) ainsi
   que `Frontend:BaseUrl` (utilisé pour construire le lien `/join/{token}` dans l'email).
 
+## Annonces et photos
+
+- Catégories fixes, seedées au démarrage (liste dans `Auth/DbSeeder.cs`), listées via
+  `GET /categories`.
+- Prix requis pour une vente, refusé pour un don/troc ; coordonnées de contact requises
+  quand le mode « coordonnées directes » est choisi — validé côté serveur
+  (FluentValidation), voir `Validation/CreateListingRequestValidator.cs`.
+- **Stockage des photos (optionnel en dev)** : sans chaîne de connexion Azure Storage
+  configurée, les photos sont écrites sur le disque de l'API (`App_Data/uploads/`,
+  ignoré par git) et servies telles quelles — pas besoin d'Azurite pour développer,
+  même logique que SQL Server LocalDB pour la base de données. Une miniature est
+  générée à l'upload (SixLabors.ImageSharp). Pour un vrai stockage Azure, renseigner
+  `BlobStorage:AzureConnectionString` (et éventuellement `BlobStorage:ContainerName`).
+
 ## Migrations EF Core
 
 ```bash

@@ -1,14 +1,30 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using PetitesAnnonces.Api.Data;
 using PetitesAnnonces.Api.Models;
 
 namespace PetitesAnnonces.Api.Auth;
 
 /// <summary>
-/// Crée les rôles applicatifs et, si configuré, un premier compte admin — au
-/// démarrage, avant que l'API ne commence à traiter des requêtes.
+/// Crée les rôles applicatifs, les catégories fixes d'annonces et, si configuré, un
+/// premier compte admin — au démarrage, avant que l'API ne commence à traiter des requêtes.
 /// </summary>
 public static class DbSeeder
 {
+    // Liste fixe en v1 (spec §4, hors périmètre : catégories dynamiques) ; gérable plus
+    // tard depuis l'interface admin (Phase 6) sans changer ce seed initial.
+    private static readonly string[] DefaultCategories =
+    [
+        "Électronique",
+        "Meubles",
+        "Vêtements",
+        "Sport & Loisirs",
+        "Enfants & Bébé",
+        "Maison & Jardin",
+        "Livres & Médias",
+        "Autre",
+    ];
+
     public static async Task SeedAsync(IServiceProvider services)
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
@@ -18,6 +34,13 @@ public static class DbSeeder
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
+        }
+
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        if (!await db.Categories.AnyAsync())
+        {
+            db.Categories.AddRange(DefaultCategories.Select(name => new Category { Name = name }));
+            await db.SaveChangesAsync();
         }
 
         var config = services.GetRequiredService<IConfiguration>();

@@ -128,6 +128,13 @@ export function GroupDetailPage() {
         {group.description && <p className="text-sm text-[var(--color-text-muted)]">{group.description}</p>}
       </div>
 
+      <Link
+        to={`/groups/${group.id}/listings`}
+        className="rounded bg-[var(--color-accent)] px-3 py-2 text-center font-medium text-white"
+      >
+        Voir les annonces du groupe
+      </Link>
+
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
       {notice && <p className="text-sm text-[var(--color-accent)]">{notice}</p>}
 
