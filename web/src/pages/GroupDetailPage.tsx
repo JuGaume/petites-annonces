@@ -1,5 +1,6 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 import {
   apiFetch,
   apiJson,
@@ -12,6 +13,7 @@ import {
 
 export function GroupDetailPage() {
   const { groupId } = useParams<{ groupId: string }>()
+  const { user } = useAuth()
   const [group, setGroup] = useState<GroupResponse | null>(null)
   const [members, setMembers] = useState<GroupMemberResponse[] | null>(null)
   const [linkInvitation, setLinkInvitation] = useState<InvitationResponse | null>(null)
@@ -21,24 +23,81 @@ export function GroupDetailPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
   const [isSavingImage, setIsSavingImage] = useState(false)
+  const [busyMemberId, setBusyMemberId] = useState<string | null>(null)
+
+  function loadMembers() {
+    return apiJson<GroupMemberResponse[]>(`/groups/${groupId}/members`).then(setMembers)
+  }
 
   useEffect(() => {
     if (!groupId) {
       return
     }
 
-    Promise.all([
-      apiJson<GroupResponse>(`/groups/${groupId}`),
-      apiJson<GroupMemberResponse[]>(`/groups/${groupId}/members`),
-    ])
-      .then(([groupResponse, membersResponse]) => {
-        setGroup(groupResponse)
-        setMembers(membersResponse)
-      })
+    Promise.all([apiJson<GroupResponse>(`/groups/${groupId}`), loadMembers()])
+      .then(([groupResponse]) => setGroup(groupResponse))
       .catch(() => setLoadError('Impossible de charger ce groupe.'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId])
 
   const isAdmin = group?.currentUserRole === 'Admin'
+  const canRemoveMembers = group?.currentUserCanRemoveMembers ?? false
+
+  async function handleChangeRole(memberId: string, role: 'Admin' | 'Member') {
+    setActionError(null)
+    setBusyMemberId(memberId)
+    try {
+      await apiJson(`/groups/${groupId}/members/${memberId}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role }),
+      })
+      await loadMembers()
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Impossible de changer ce rôle.')
+    } finally {
+      setBusyMemberId(null)
+    }
+  }
+
+  async function handleTogglePermission(
+    member: GroupMemberResponse,
+    key: 'canInviteMembers' | 'canRemoveMembers' | 'canDeleteListings',
+  ) {
+    setActionError(null)
+    setBusyMemberId(member.userId)
+    try {
+      await apiJson(`/groups/${groupId}/members/${member.userId}/permissions`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          canInviteMembers: key === 'canInviteMembers' ? !member.canInviteMembers : member.canInviteMembers,
+          canRemoveMembers: key === 'canRemoveMembers' ? !member.canRemoveMembers : member.canRemoveMembers,
+          canDeleteListings: key === 'canDeleteListings' ? !member.canDeleteListings : member.canDeleteListings,
+        }),
+      })
+      await loadMembers()
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Impossible de mettre à jour ces droits.')
+    } finally {
+      setBusyMemberId(null)
+    }
+  }
+
+  async function handleRemoveMember(member: GroupMemberResponse) {
+    if (!window.confirm(`Retirer ${member.displayName} du groupe ?`)) {
+      return
+    }
+
+    setActionError(null)
+    setBusyMemberId(member.userId)
+    try {
+      await apiJson(`/groups/${groupId}/members/${member.userId}`, { method: 'DELETE' })
+      await loadMembers()
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Impossible de retirer ce membre.')
+    } finally {
+      setBusyMemberId(null)
+    }
+  }
 
   async function generateLink() {
     setActionError(null)
@@ -232,15 +291,83 @@ export function GroupDetailPage() {
 
       <section>
         <h2 className="mb-2 font-semibold">Membres ({members.length})</h2>
-        <ul className="flex flex-col gap-1">
-          {members.map((member) => (
-            <li key={member.userId} className="flex items-center justify-between text-sm">
-              <span>{member.displayName}</span>
-              {member.role === 'Admin' && (
-                <span className="text-xs text-[var(--color-text-muted)]">Admin</span>
-              )}
-            </li>
-          ))}
+        <ul className="flex flex-col gap-3">
+          {members.map((member) => {
+            const isSelf = member.userId === user?.id
+            const isCreator = member.userId === group.createdByUserId
+            const isBusy = busyMemberId === member.userId
+            // Un admin gère tout le monde (sauf le créateur, protégé) ; un membre avec
+            // le droit délégué ne peut agir que sur des membres simples, jamais un admin.
+            const canManageThisMember = !isSelf && !isCreator && (isAdmin || (canRemoveMembers && member.role !== 'Admin'))
+
+            return (
+              <li key={member.userId} className="flex flex-col gap-1.5 rounded border border-[var(--color-border)] p-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>
+                    {member.displayName}
+                    {isSelf && <span className="text-[var(--color-text-muted)]"> (vous)</span>}
+                  </span>
+                  <span className="text-xs text-[var(--color-text-muted)]">
+                    {isCreator ? 'Créateur' : member.role === 'Admin' ? 'Admin' : null}
+                  </span>
+                </div>
+
+                {isAdmin && !isSelf && !isCreator && (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <button
+                      onClick={() => handleChangeRole(member.userId, member.role === 'Admin' ? 'Member' : 'Admin')}
+                      disabled={isBusy}
+                      className="text-xs font-medium text-[var(--color-accent)] disabled:opacity-60"
+                    >
+                      {member.role === 'Admin' ? 'Rétrograder en membre' : 'Promouvoir admin'}
+                    </button>
+
+                    {member.role !== 'Admin' && (
+                      <>
+                        <label className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
+                          <input
+                            type="checkbox"
+                            checked={member.canInviteMembers}
+                            disabled={isBusy}
+                            onChange={() => handleTogglePermission(member, 'canInviteMembers')}
+                          />
+                          Inviter
+                        </label>
+                        <label className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
+                          <input
+                            type="checkbox"
+                            checked={member.canRemoveMembers}
+                            disabled={isBusy}
+                            onChange={() => handleTogglePermission(member, 'canRemoveMembers')}
+                          />
+                          Retirer des membres
+                        </label>
+                        <label className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
+                          <input
+                            type="checkbox"
+                            checked={member.canDeleteListings}
+                            disabled={isBusy}
+                            onChange={() => handleTogglePermission(member, 'canDeleteListings')}
+                          />
+                          Supprimer des annonces
+                        </label>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {canManageThisMember && (
+                  <button
+                    onClick={() => handleRemoveMember(member)}
+                    disabled={isBusy}
+                    className="self-start text-xs text-red-600 disabled:opacity-60"
+                  >
+                    Retirer du groupe
+                  </button>
+                )}
+              </li>
+            )
+          })}
         </ul>
       </section>
 
@@ -251,7 +378,7 @@ export function GroupDetailPage() {
         </label>
       </section>
 
-      {isAdmin && (
+      {group.currentUserCanInviteMembers && (
         <section className="flex flex-col gap-4 border-t border-[var(--color-border)] pt-6">
           <h2 className="font-semibold">Inviter</h2>
 

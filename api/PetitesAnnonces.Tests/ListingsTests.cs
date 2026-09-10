@@ -332,6 +332,26 @@ public class ListingsTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
+    public async Task Member_With_CanDeleteListings_Can_Delete_Anyones_Listing()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var categoryId = await GetFirstCategoryIdAsync(owner);
+
+        var listing = (await (await owner.PostAsync($"/groups/{group.Id}/listings", BuildListingForm(categoryId)))
+            .Content.ReadFromJsonAsync<ListingDetailResponse>())!;
+
+        var (moderator, moderatorUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, moderator, group.Id);
+        await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{moderatorUser.Id}/permissions",
+            new UpdateMemberPermissionsRequest(CanInviteMembers: false, CanRemoveMembers: false, CanDeleteListings: true));
+
+        var deleteResponse = await moderator.DeleteAsync($"/groups/{group.Id}/listings/{listing.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task Listings_Are_Isolated_Between_Groups()
     {
         var (ownerA, _) = await RegisterAndAuthenticateAsync();

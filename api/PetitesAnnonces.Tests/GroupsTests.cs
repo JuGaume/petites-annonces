@@ -44,6 +44,15 @@ public class GroupsTests : IClassFixture<CustomWebApplicationFactory>
         return (await response.Content.ReadFromJsonAsync<GroupResponse>())!;
     }
 
+    /// <summary>Fait rejoindre <paramref name="joiner"/> au groupe via une invitation-lien générée par <paramref name="owner"/>.</summary>
+    private static async Task JoinGroupAsync(HttpClient owner, HttpClient joiner, int groupId)
+    {
+        var linkResponse = await owner.PostAsync($"/groups/{groupId}/invitations/link", content: null);
+        var link = (await linkResponse.Content.ReadFromJsonAsync<InvitationResponse>())!;
+        var acceptResponse = await joiner.PostAsync($"/invitations/{link.Token}/accept", content: null);
+        acceptResponse.EnsureSuccessStatusCode();
+    }
+
     [Fact]
     public async Task Create_Group_Makes_Creator_An_Admin_Member()
     {
@@ -343,6 +352,193 @@ public class GroupsTests : IClassFixture<CustomWebApplicationFactory>
         var response = await member.PostAsync($"/groups/{group.Id}/image", form);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_Can_Promote_A_Member_To_Admin_And_Demote_Back()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (member, memberUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, member, group.Id);
+
+        var promote = await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{memberUser.Id}/role", new UpdateMemberRoleRequest("Admin"));
+        Assert.Equal(HttpStatusCode.NoContent, promote.StatusCode);
+
+        var membersAfterPromote = await owner.GetFromJsonAsync<List<GroupMemberResponse>>($"/groups/{group.Id}/members");
+        Assert.Equal("Admin", membersAfterPromote!.Single(m => m.UserId == memberUser.Id).Role);
+
+        var demote = await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{memberUser.Id}/role", new UpdateMemberRoleRequest("Member"));
+        Assert.Equal(HttpStatusCode.NoContent, demote.StatusCode);
+
+        var membersAfterDemote = await owner.GetFromJsonAsync<List<GroupMemberResponse>>($"/groups/{group.Id}/members");
+        Assert.Equal("Member", membersAfterDemote!.Single(m => m.UserId == memberUser.Id).Role);
+    }
+
+    [Fact]
+    public async Task NonAdmin_Cannot_Change_Member_Roles()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (member, memberUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, member, group.Id);
+
+        var response = await member.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{memberUser.Id}/role", new UpdateMemberRoleRequest("Admin"));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Change_Role_Of_The_Groups_Creator()
+    {
+        var (owner, ownerUser) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        var response = await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{ownerUser.Id}/role", new UpdateMemberRoleRequest("Member"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_Can_Grant_And_Revoke_Individual_Permissions_To_A_Member()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (member, memberUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, member, group.Id);
+
+        var grant = await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{memberUser.Id}/permissions",
+            new UpdateMemberPermissionsRequest(CanInviteMembers: true, CanRemoveMembers: false, CanDeleteListings: true));
+        Assert.Equal(HttpStatusCode.NoContent, grant.StatusCode);
+
+        var members = await owner.GetFromJsonAsync<List<GroupMemberResponse>>($"/groups/{group.Id}/members");
+        var updated = members!.Single(m => m.UserId == memberUser.Id);
+        Assert.True(updated.CanInviteMembers);
+        Assert.False(updated.CanRemoveMembers);
+        Assert.True(updated.CanDeleteListings);
+
+        var revoke = await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{memberUser.Id}/permissions",
+            new UpdateMemberPermissionsRequest(CanInviteMembers: false, CanRemoveMembers: false, CanDeleteListings: false));
+        Assert.Equal(HttpStatusCode.NoContent, revoke.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Grant_Individual_Permissions_To_An_Admin()
+    {
+        var (owner, ownerUser) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        var response = await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{ownerUser.Id}/permissions",
+            new UpdateMemberPermissionsRequest(true, true, true));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Member_With_CanInviteMembers_Can_Generate_An_Invitation_Link()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (member, memberUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, member, group.Id);
+
+        await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{memberUser.Id}/permissions",
+            new UpdateMemberPermissionsRequest(CanInviteMembers: true, CanRemoveMembers: false, CanDeleteListings: false));
+
+        var response = await member.PostAsync($"/groups/{group.Id}/invitations/link", content: null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_Can_Remove_A_Member()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (member, memberUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, member, group.Id);
+
+        var response = await owner.DeleteAsync($"/groups/{group.Id}/members/{memberUser.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var members = await owner.GetFromJsonAsync<List<GroupMemberResponse>>($"/groups/{group.Id}/members");
+        Assert.DoesNotContain(members!, m => m.UserId == memberUser.Id);
+    }
+
+    [Fact]
+    public async Task Member_With_CanRemoveMembers_Can_Remove_A_Non_Admin_But_Not_An_Admin()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        var (moderator, moderatorUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, moderator, group.Id);
+        await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{moderatorUser.Id}/permissions",
+            new UpdateMemberPermissionsRequest(CanInviteMembers: false, CanRemoveMembers: true, CanDeleteListings: false));
+
+        var (regular, regularUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, regular, group.Id);
+
+        var (otherAdmin, otherAdminUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, otherAdmin, group.Id);
+        await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{otherAdminUser.Id}/role", new UpdateMemberRoleRequest("Admin"));
+
+        var removeRegular = await moderator.DeleteAsync($"/groups/{group.Id}/members/{regularUser.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, removeRegular.StatusCode);
+
+        var removeAdmin = await moderator.DeleteAsync($"/groups/{group.Id}/members/{otherAdminUser.Id}");
+        Assert.Equal(HttpStatusCode.Forbidden, removeAdmin.StatusCode);
+    }
+
+    [Fact]
+    public async Task Member_Without_Permission_Cannot_Remove_Another_Member()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (memberA, _) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, memberA, group.Id);
+        var (memberB, memberBUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, memberB, group.Id);
+
+        var response = await memberA.DeleteAsync($"/groups/{group.Id}/members/{memberBUser.Id}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Remove_The_Groups_Creator()
+    {
+        var (owner, ownerUser) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var (otherAdmin, otherAdminUser) = await RegisterAndAuthenticateAsync();
+        await JoinGroupAsync(owner, otherAdmin, group.Id);
+        await owner.PatchAsJsonAsync(
+            $"/groups/{group.Id}/members/{otherAdminUser.Id}/role", new UpdateMemberRoleRequest("Admin"));
+
+        var response = await otherAdmin.DeleteAsync($"/groups/{group.Id}/members/{ownerUser.Id}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cannot_Remove_Self()
+    {
+        var (owner, ownerUser) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        var response = await owner.DeleteAsync($"/groups/{group.Id}/members/{ownerUser.Id}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

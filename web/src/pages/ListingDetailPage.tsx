@@ -5,6 +5,7 @@ import {
   apiJson,
   ApiError,
   type ConversationResponse,
+  type GroupResponse,
   type ListingDetailResponse,
   type ListingStatus,
 } from '../lib/apiClient'
@@ -27,18 +28,28 @@ export function ListingDetailPage() {
   const navigate = useNavigate()
 
   const [listing, setListing] = useState<ListingDetailResponse | null>(null)
+  const [group, setGroup] = useState<GroupResponse | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
   const [isContacting, setIsContacting] = useState(false)
 
   useEffect(() => {
-    apiJson<ListingDetailResponse>(`/groups/${groupId}/listings/${listingId}`)
-      .then(setListing)
+    Promise.all([
+      apiJson<ListingDetailResponse>(`/groups/${groupId}/listings/${listingId}`),
+      apiJson<GroupResponse>(`/groups/${groupId}`),
+    ])
+      .then(([listingResponse, groupResponse]) => {
+        setListing(listingResponse)
+        setGroup(groupResponse)
+      })
       .catch(() => setLoadError('Impossible de charger cette annonce.'))
   }, [groupId, listingId])
 
   const isAuthor = listing?.authorUserId === user?.id
+  // Un modérateur disposant du droit délégué peut aussi supprimer l'annonce d'un
+  // autre (spec Phase 10), même sans en être l'auteur.
+  const canDelete = isAuthor || (group?.currentUserCanDeleteListings ?? false)
 
   async function toggleFavorite() {
     if (!listing) {
@@ -195,30 +206,34 @@ export function ListingDetailPage() {
 
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
 
-      {isAuthor && (
+      {(isAuthor || canDelete) && (
         <section className="flex flex-col gap-2 border-t border-[var(--color-border)] pt-4">
-          <h2 className="font-semibold">Gérer mon annonce</h2>
-          <div className="flex flex-wrap gap-2">
-            {(['Available', 'Reserved', 'Sold'] as const)
-              .filter((status) => status !== listing.status)
-              .map((status) => (
-                <button
-                  key={status}
-                  onClick={() => updateStatus(status)}
-                  disabled={isBusy}
-                  className="rounded border border-[var(--color-border)] px-3 py-2 text-sm disabled:opacity-60"
-                >
-                  Marquer {STATUS_LABELS[status].toLowerCase()}
-                </button>
-              ))}
-          </div>
-          <button
-            onClick={deleteListing}
-            disabled={isBusy}
-            className="self-start rounded border border-red-300 px-3 py-2 text-sm text-red-600 disabled:opacity-60"
-          >
-            Supprimer l'annonce
-          </button>
+          <h2 className="font-semibold">Gérer {isAuthor ? 'mon annonce' : 'cette annonce'}</h2>
+          {isAuthor && (
+            <div className="flex flex-wrap gap-2">
+              {(['Available', 'Reserved', 'Sold'] as const)
+                .filter((status) => status !== listing.status)
+                .map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => updateStatus(status)}
+                    disabled={isBusy}
+                    className="rounded border border-[var(--color-border)] px-3 py-2 text-sm disabled:opacity-60"
+                  >
+                    Marquer {STATUS_LABELS[status].toLowerCase()}
+                  </button>
+                ))}
+            </div>
+          )}
+          {canDelete && (
+            <button
+              onClick={deleteListing}
+              disabled={isBusy}
+              className="self-start rounded border border-red-300 px-3 py-2 text-sm text-red-600 disabled:opacity-60"
+            >
+              Supprimer l'annonce
+            </button>
+          )}
         </section>
       )}
     </main>

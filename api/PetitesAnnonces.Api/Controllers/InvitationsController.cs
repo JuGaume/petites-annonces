@@ -105,6 +105,11 @@ public class InvitationsController(ApplicationDbContext db, UserManager<Applicat
             memberCount,
             membership.Role.ToString(),
             membership.EmailDigestEnabled,
-            ListingPreviewUrls: []);
+            ListingPreviewUrls: [],
+            // Un membre qui vient de rejoindre le groupe n'a par définition aucun droit
+            // délégué (accordés individuellement plus tard par un admin, spec Phase 10).
+            CurrentUserCanInviteMembers: false,
+            CurrentUserCanRemoveMembers: false,
+            CurrentUserCanDeleteListings: false);
     }
 }

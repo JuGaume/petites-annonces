@@ -14,7 +14,12 @@ public record GroupResponse(
     bool EmailDigestEnabled,
     // Miniatures des annonces disponibles les plus récentes du groupe (spec Phase 9),
     // pour un aperçu sur la liste des groupes.
-    IReadOnlyList<string> ListingPreviewUrls);
+    IReadOnlyList<string> ListingPreviewUrls,
+    // Droits effectifs de l'appelant dans ce groupe (spec Phase 10) : toujours vrais
+    // pour un admin, sinon reflètent les droits accordés individuellement.
+    bool CurrentUserCanInviteMembers,
+    bool CurrentUserCanRemoveMembers,
+    bool CurrentUserCanDeleteListings);
 
 public record UpdateGroupNotificationPreferenceRequest(bool EmailDigestEnabled);
 
@@ -23,7 +28,19 @@ public record GroupMemberResponse(
     string DisplayName,
     string Email,
     string Role,
-    DateTimeOffset JoinedAt);
+    DateTimeOffset JoinedAt,
+    bool CanInviteMembers,
+    bool CanRemoveMembers,
+    bool CanDeleteListings);
+
+/// <summary>Change le rôle local au groupe d'un membre (spec Phase 10). "Admin" ou "Member".</summary>
+public record UpdateMemberRoleRequest(string Role);
+
+/// <summary>
+/// Droits accordés individuellement à un membre simple (spec Phase 10) — sans effet sur
+/// un admin, qui les a tous implicitement.
+/// </summary>
+public record UpdateMemberPermissionsRequest(bool CanInviteMembers, bool CanRemoveMembers, bool CanDeleteListings);
 
 public record CreateEmailInvitationRequest(string Email);
 

@@ -18,6 +18,18 @@ public class GroupMembership
 
     public GroupMemberRole Role { get; set; } = GroupMemberRole.Member;
 
+    // Droits accordés individuellement par un admin à un membre simple (spec Phase 10) :
+    // sans objet pour un admin, qui les a tous implicitement (voir les contrôleurs
+    // concernés — toujours "Role == Admin || Can...").
+    /// <summary>Générer/révoquer un lien d'invitation, inviter par email.</summary>
+    public bool CanInviteMembers { get; set; }
+
+    /// <summary>Retirer un autre membre (non-admin) du groupe.</summary>
+    public bool CanRemoveMembers { get; set; }
+
+    /// <summary>Supprimer n'importe quelle annonce du groupe, pas seulement les siennes.</summary>
+    public bool CanDeleteListings { get; set; }
+
     public DateTimeOffset JoinedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>Désabonnement possible par groupe du digest quotidien (Phase 5).</summary>

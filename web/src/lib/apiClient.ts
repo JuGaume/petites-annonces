@@ -24,6 +24,9 @@ export interface GroupResponse {
   currentUserRole: 'Admin' | 'Member'
   emailDigestEnabled: boolean
   listingPreviewUrls: string[]
+  currentUserCanInviteMembers: boolean
+  currentUserCanRemoveMembers: boolean
+  currentUserCanDeleteListings: boolean
 }
 
 export interface GroupMemberResponse {
@@ -32,6 +35,9 @@ export interface GroupMemberResponse {
   email: string
   role: 'Admin' | 'Member'
   joinedAt: string
+  canInviteMembers: boolean
+  canRemoveMembers: boolean
+  canDeleteListings: boolean
 }
 
 export interface InvitationResponse {

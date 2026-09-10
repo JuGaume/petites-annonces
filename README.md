@@ -203,6 +203,37 @@ Phase 8), à la demande directe de l'utilisateur.
   habituel une fois connecté. Distincte de la landing statique de `landing/`
   (celle-ci reste la page pensée pour l'indexation, hors du SPA).
 
+## Gestion des membres et droits délégués
+
+Demandé directement par l'utilisateur : le créateur d'un groupe (et les admins qu'il
+désigne) peuvent déléguer une partie de leurs pouvoirs aux membres simples, sans les
+promouvoir administrateurs.
+
+- **Rôle** : un admin peut promouvoir un membre admin ou le rétrograder
+  (`PATCH /groups/{groupId}/members/{userId}/role`). Le créateur du groupe reste
+  admin en permanence (protection contre un groupe qui se retrouverait sans
+  administrateur).
+- **Droits délégués à un membre simple** (`PATCH
+  /groups/{groupId}/members/{userId}/permissions`, admin uniquement — sans effet sur
+  un autre admin, qui les a déjà tous implicitement) :
+  - `CanInviteMembers` — générer/révoquer un lien d'invitation, inviter par email
+    (mêmes routes que pour un admin, `GroupsController` vérifie désormais ce droit en
+    plus du rôle).
+  - `CanRemoveMembers` — retirer un membre simple du groupe (jamais un admin ni le
+    créateur).
+  - `CanDeleteListings` — supprimer n'importe quelle annonce du groupe, pas
+    seulement les siennes (`ListingsController.Delete`).
+- **Retirer un membre** (`DELETE /groups/{groupId}/members/{userId}`, admin ou
+  détenteur de `CanRemoveMembers`) : le créateur du groupe ne peut jamais être
+  retiré, personne ne peut se retirer soi-même via cette route (pas de fonctionnalité
+  « quitter le groupe » pour l'instant).
+- Frontend : la page de détail d'un groupe (`GroupDetailPage`) affiche, pour un
+  admin, des contrôles par membre (promotion/rétrogradation, cases à cocher pour les
+  trois droits, bouton « Retirer du groupe ») ; un membre avec `CanRemoveMembers`
+  voit uniquement le bouton de retrait sur les membres simples. La section « Inviter »
+  et le bouton « Supprimer l'annonce » (page de détail d'une annonce) s'affichent
+  désormais selon le droit effectif de l'utilisateur, pas seulement pour les admins.
+
 ## Migrations EF Core
 
 ```bash

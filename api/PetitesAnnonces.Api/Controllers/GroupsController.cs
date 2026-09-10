@@ -66,7 +66,12 @@ public class GroupsController(
 
         await db.SaveChangesAsync();
 
-        return new GroupResponse(group.Id, group.Name, group.Description, group.ImageUrl, group.CreatedByUserId, group.CreatedAt, MemberCount: 1, GroupMemberRole.Admin.ToString(), EmailDigestEnabled: true, ListingPreviewUrls: []);
+        // Le créateur est admin (droits complets, voir plus bas) : pas besoin des trois
+        // derniers booléens pour lui, mais le contrat les attend toujours.
+        return new GroupResponse(
+            group.Id, group.Name, group.Description, group.ImageUrl, group.CreatedByUserId, group.CreatedAt,
+            MemberCount: 1, GroupMemberRole.Admin.ToString(), EmailDigestEnabled: true, ListingPreviewUrls: [],
+            CurrentUserCanInviteMembers: true, CurrentUserCanRemoveMembers: true, CurrentUserCanDeleteListings: true);
     }
 
     [HttpGet]
@@ -88,6 +93,9 @@ public class GroupsController(
                 MemberCount = m.Group.Memberships.Count,
                 m.Role,
                 m.EmailDigestEnabled,
+                m.CanInviteMembers,
+                m.CanRemoveMembers,
+                m.CanDeleteListings,
             })
             .ToListAsync();
 
@@ -104,7 +112,10 @@ public class GroupsController(
                 m.MemberCount,
                 m.Role.ToString(),
                 m.EmailDigestEnabled,
-                previewsByGroup.TryGetValue(m.Id, out var urls) ? urls : []))
+                previewsByGroup.TryGetValue(m.Id, out var urls) ? urls : [],
+                CurrentUserCanInviteMembers: m.Role == GroupMemberRole.Admin || m.CanInviteMembers,
+                CurrentUserCanRemoveMembers: m.Role == GroupMemberRole.Admin || m.CanRemoveMembers,
+                CurrentUserCanDeleteListings: m.Role == GroupMemberRole.Admin || m.CanDeleteListings))
             .ToList();
     }
 
@@ -195,10 +206,118 @@ public class GroupsController(
             .Where(m => m.GroupId == groupId)
             .OrderBy(m => m.JoinedAt)
             .Join(db.Users, m => m.UserId, u => u.Id, (m, u) => new GroupMemberResponse(
-                u.Id, u.DisplayName, u.Email!, m.Role.ToString(), m.JoinedAt))
+                u.Id, u.DisplayName, u.Email!, m.Role.ToString(), m.JoinedAt,
+                m.CanInviteMembers, m.CanRemoveMembers, m.CanDeleteListings))
             .ToListAsync();
 
         return members;
+    }
+
+    [HttpPatch("{groupId:int}/members/{userId}/role")]
+    [Authorize(Policy = GroupPolicies.Admin)]
+    public async Task<IActionResult> UpdateMemberRole(int groupId, string userId, UpdateMemberRoleRequest request)
+    {
+        if (!Enum.TryParse<GroupMemberRole>(request.Role, ignoreCase: true, out var role))
+        {
+            return ValidationProblem("Rôle invalide (Admin ou Member attendu).");
+        }
+
+        var group = await db.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == groupId);
+        if (group is null)
+        {
+            return NotFound();
+        }
+
+        // Le créateur reste admin en permanence : sans ça, un groupe pourrait se
+        // retrouver sans aucun admin (personne pour re-promouvoir qui que ce soit).
+        if (group.CreatedByUserId == userId)
+        {
+            return ValidationProblem("Le créateur du groupe reste toujours administrateur.");
+        }
+
+        var membership = await db.GroupMemberships.FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
+        if (membership is null)
+        {
+            return NotFound();
+        }
+
+        if (membership.Role == GroupMemberRole.Admin && role != GroupMemberRole.Admin)
+        {
+            var otherAdminExists = await db.GroupMemberships
+                .AnyAsync(m => m.GroupId == groupId && m.UserId != userId && m.Role == GroupMemberRole.Admin);
+            if (!otherAdminExists)
+            {
+                return ValidationProblem("Impossible de rétrograder le dernier administrateur du groupe.");
+            }
+        }
+
+        membership.Role = role;
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{groupId:int}/members/{userId}/permissions")]
+    [Authorize(Policy = GroupPolicies.Admin)]
+    public async Task<IActionResult> UpdateMemberPermissions(int groupId, string userId, UpdateMemberPermissionsRequest request)
+    {
+        var membership = await db.GroupMemberships.FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
+        if (membership is null)
+        {
+            return NotFound();
+        }
+
+        if (membership.Role == GroupMemberRole.Admin)
+        {
+            return ValidationProblem("Un administrateur a déjà tous les droits, inutile de les lui accorder individuellement.");
+        }
+
+        membership.CanInviteMembers = request.CanInviteMembers;
+        membership.CanRemoveMembers = request.CanRemoveMembers;
+        membership.CanDeleteListings = request.CanDeleteListings;
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{groupId:int}/members/{userId}")]
+    [Authorize(Policy = GroupPolicies.Member)]
+    public async Task<IActionResult> RemoveMember(int groupId, string userId)
+    {
+        if (userId == CurrentUserId)
+        {
+            return ValidationProblem("Vous ne pouvez pas vous retirer vous-même du groupe.");
+        }
+
+        var caller = await db.GroupMemberships.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == CurrentUserId);
+        if (caller is null)
+        {
+            return NotFound();
+        }
+
+        var target = await db.GroupMemberships.FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
+        if (target is null)
+        {
+            return NotFound();
+        }
+
+        // Seul un admin peut retirer un autre admin — un membre disposant uniquement de
+        // CanRemoveMembers ne peut agir que sur des membres simples.
+        var canRemoveTarget = caller.Role == GroupMemberRole.Admin
+            || (caller.CanRemoveMembers && target.Role != GroupMemberRole.Admin);
+        if (!canRemoveTarget)
+        {
+            return Forbid();
+        }
+
+        var group = await db.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == groupId);
+        if (group?.CreatedByUserId == userId)
+        {
+            return ValidationProblem("Le créateur du groupe ne peut pas être retiré.");
+        }
+
+        db.GroupMemberships.Remove(target);
+        await db.SaveChangesAsync();
+        return NoContent();
     }
 
     [HttpPatch("{groupId:int}/notifications")]
@@ -218,9 +337,14 @@ public class GroupsController(
     }
 
     [HttpPost("{groupId:int}/invitations/link")]
-    [Authorize(Policy = GroupPolicies.Admin)]
+    [Authorize(Policy = GroupPolicies.Member)]
     public async Task<ActionResult<InvitationResponse>> GetOrCreateLinkInvitation(int groupId)
     {
+        if (!await CanInviteAsync(groupId))
+        {
+            return Forbid();
+        }
+
         var invitation = await db.GroupInvitations
             .Where(i => i.GroupId == groupId
                 && i.Type == GroupInvitationType.Link
@@ -246,9 +370,14 @@ public class GroupsController(
     }
 
     [HttpPost("{groupId:int}/invitations/link/revoke")]
-    [Authorize(Policy = GroupPolicies.Admin)]
+    [Authorize(Policy = GroupPolicies.Member)]
     public async Task<IActionResult> RevokeLinkInvitation(int groupId)
     {
+        if (!await CanInviteAsync(groupId))
+        {
+            return Forbid();
+        }
+
         var activeLinks = await db.GroupInvitations
             .Where(i => i.GroupId == groupId && i.Type == GroupInvitationType.Link && i.RevokedAt == null)
             .ToListAsync();
@@ -263,9 +392,14 @@ public class GroupsController(
     }
 
     [HttpPost("{groupId:int}/invitations/email")]
-    [Authorize(Policy = GroupPolicies.Admin)]
+    [Authorize(Policy = GroupPolicies.Member)]
     public async Task<ActionResult<InvitationResponse>> InviteByEmail(int groupId, CreateEmailInvitationRequest request)
     {
+        if (!await CanInviteAsync(groupId))
+        {
+            return Forbid();
+        }
+
         var email = request.Email?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(email) || !new EmailAddressAttribute().IsValid(email))
         {
@@ -303,6 +437,14 @@ public class GroupsController(
         return ToInvitationResponse(invitation);
     }
 
+    /// <summary>Admin, ou membre simple ayant reçu le droit d'inviter (spec Phase 10).</summary>
+    private async Task<bool> CanInviteAsync(int groupId)
+    {
+        var membership = await db.GroupMemberships.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == CurrentUserId);
+        return membership is not null && (membership.Role == GroupMemberRole.Admin || membership.CanInviteMembers);
+    }
+
     private string BuildJoinUrl(string token)
     {
         var baseUrl = (configuration["Frontend:BaseUrl"] ?? "http://localhost:5173").TrimEnd('/');
@@ -325,6 +467,9 @@ public class GroupsController(
                 MemberCount = m.Group.Memberships.Count,
                 m.Role,
                 m.EmailDigestEnabled,
+                m.CanInviteMembers,
+                m.CanRemoveMembers,
+                m.CanDeleteListings,
             })
             .FirstOrDefaultAsync();
 
@@ -345,7 +490,10 @@ public class GroupsController(
             membership.MemberCount,
             membership.Role.ToString(),
             membership.EmailDigestEnabled,
-            previewsByGroup.TryGetValue(membership.Id, out var urls) ? urls : []);
+            previewsByGroup.TryGetValue(membership.Id, out var urls) ? urls : [],
+            CurrentUserCanInviteMembers: membership.Role == GroupMemberRole.Admin || membership.CanInviteMembers,
+            CurrentUserCanRemoveMembers: membership.Role == GroupMemberRole.Admin || membership.CanRemoveMembers,
+            CurrentUserCanDeleteListings: membership.Role == GroupMemberRole.Admin || membership.CanDeleteListings);
     }
 
     /// <summary>

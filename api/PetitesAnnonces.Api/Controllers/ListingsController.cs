@@ -181,7 +181,7 @@ public class ListingsController(
             return NotFound();
         }
 
-        if (listing.AuthorUserId != CurrentUserId)
+        if (listing.AuthorUserId != CurrentUserId && !await CanDeleteAnyListingAsync(groupId))
         {
             return Forbid();
         }
@@ -200,6 +200,14 @@ public class ListingsController(
     // Marge au-dessus de MaxImages * MaxImageBytes pour les autres champs du formulaire.
     private const long CreateListingRequestValidatorSizeLimit =
         CreateListingRequestValidator.MaxImages * CreateListingRequestValidator.MaxImageBytes + 1024 * 1024;
+
+    /// <summary>Admin, ou membre simple ayant reçu le droit de supprimer n'importe quelle annonce (spec Phase 10).</summary>
+    private async Task<bool> CanDeleteAnyListingAsync(int groupId)
+    {
+        var membership = await db.GroupMemberships.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == CurrentUserId);
+        return membership is not null && (membership.Role == GroupMemberRole.Admin || membership.CanDeleteListings);
+    }
 
     private IQueryable<ListingDetailResponse> DetailQuery(int groupId, int? listingId = null)
     {
