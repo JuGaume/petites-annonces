@@ -65,11 +65,7 @@ public class ConversationsController(ApplicationDbContext db, IHubContext<Conver
     [HttpGet]
     public async Task<ActionResult<List<ConversationResponse>>> Mine()
     {
-        var userId = CurrentUserId;
-        return await ConversationsQuery()
-            .Where(c => c.BuyerUserId == userId || c.SellerUserId == userId)
-            .OrderByDescending(c => c.LastMessageAt ?? c.CreatedAt)
-            .ToListAsync();
+        return await ConversationsQuery(participantUserId: CurrentUserId).ToListAsync();
     }
 
     [HttpGet("{conversationId:int}/messages")]
@@ -147,13 +143,24 @@ public class ConversationsController(ApplicationDbContext db, IHubContext<Conver
         return response;
     }
 
-    private IQueryable<ConversationResponse> ConversationsQuery(int? conversationId = null)
+    private IQueryable<ConversationResponse> ConversationsQuery(int? conversationId = null, string? participantUserId = null)
     {
         var query = db.Conversations.AsNoTracking().AsQueryable();
         if (conversationId is not null)
         {
             query = query.Where(c => c.Id == conversationId);
         }
+
+        if (participantUserId is not null)
+        {
+            query = query.Where(c => c.BuyerUserId == participantUserId || c.SellerUserId == participantUserId);
+        }
+
+        // Trié avant la projection en ConversationResponse : un OrderBy sur le résultat
+        // déjà projeté ne se traduit pas en SQL sur SQL Server (même problème que
+        // GroupsController.Members, non détecté par les tests sur fournisseur InMemory).
+        query = query.OrderByDescending(c =>
+            c.Messages.OrderByDescending(m => m.CreatedAt).Select(m => (DateTimeOffset?)m.CreatedAt).FirstOrDefault() ?? c.CreatedAt);
 
         return query
             .Join(db.Listings, c => c.ListingId, l => l.Id, (c, l) => new { Conversation = c, Listing = l })

@@ -96,12 +96,16 @@ public class GroupsController(
     [Authorize(Policy = GroupPolicies.Member)]
     public async Task<ActionResult<List<GroupMemberResponse>>> Members(int groupId)
     {
+        // Trier avant la projection en GroupMemberResponse : une fois le Join projeté
+        // directement dans le record de réponse, EF Core ne sait plus retraduire un
+        // OrderBy ultérieur en SQL (échoue sur SQL Server, contrairement au fournisseur
+        // InMemory utilisé par les tests — voir le correctif équivalent sur ListingsController).
         var members = await db.GroupMemberships
             .AsNoTracking()
             .Where(m => m.GroupId == groupId)
+            .OrderBy(m => m.JoinedAt)
             .Join(db.Users, m => m.UserId, u => u.Id, (m, u) => new GroupMemberResponse(
                 u.Id, u.DisplayName, u.Email!, m.Role.ToString(), m.JoinedAt))
-            .OrderBy(m => m.JoinedAt)
             .ToListAsync();
 
         return members;
