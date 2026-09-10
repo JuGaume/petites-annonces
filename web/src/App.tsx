@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { AdminRoute } from './components/AdminRoute'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { RootRoute } from './components/RootRoute'
 import { AccountPage } from './pages/AccountPage'
 import { AdminPage } from './pages/AdminPage'
 import { ConversationsListPage } from './pages/ConversationsListPage'
@@ -9,7 +10,6 @@ import { ConversationThreadPage } from './pages/ConversationThreadPage'
 import { CreateListingPage } from './pages/CreateListingPage'
 import { FavoritesPage } from './pages/FavoritesPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
-import { HomePage } from './pages/HomePage'
 import { JoinGroupPage } from './pages/JoinGroupPage'
 import { ListingDetailPage } from './pages/ListingDetailPage'
 import { ListingsFeedPage } from './pages/ListingsFeedPage'
@@ -26,14 +26,9 @@ function App() {
           {/* Accessible sans connexion : affiche l'invitation et propose de s'inscrire
               ou de se connecter avant de rejoindre le groupe automatiquement. */}
           <Route path="/join/:token" element={<JoinGroupPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Ni redirect ni garde ici : RootRoute affiche le tableau de bord une fois
+              connecté, une vitrine publique sinon (voir RootRoute.tsx). */}
+          <Route path="/" element={<RootRoute />} />
           <Route
             path="/groups/:groupId"
             element={

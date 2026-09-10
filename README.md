@@ -196,6 +196,12 @@ Phase 8), à la demande directe de l'utilisateur.
   `AuthController` (spec §8, anti brute-force).
 - **Landing retravaillée** (`landing/`) : nouvelle section présentant ces
   fonctionnalités (recherche, favoris, groupes personnalisés, profil).
+- **Vitrine sur `/` quand on n'est pas connecté** : la racine du SPA (`web/`) n'est
+  plus une route protégée qui renvoie brutalement vers `/login` — `RootRoute` y
+  affiche désormais une page d'accueil publique (`WelcomePage`, CTA « Créer un
+  compte »/« Se connecter ») tant qu'il n'y a pas de session, et le tableau de bord
+  habituel une fois connecté. Distincte de la landing statique de `landing/`
+  (celle-ci reste la page pensée pour l'indexation, hors du SPA).
 
 ## Migrations EF Core
 
