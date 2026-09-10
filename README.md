@@ -62,6 +62,18 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   Sans cette configuration, le bouton "Se connecter avec Google" reste simplement
   masqué — l'auth email/mot de passe n'en dépend pas.
 
+## Groupes et invitations
+
+- Créer un groupe rend automatiquement son créateur admin de ce groupe.
+- Deux façons d'inviter (réservées aux admins du groupe) : un lien partageable et
+  réutilisable jusqu'à révocation, ou une invitation nominative par email, à usage
+  unique et réservée à l'adresse ciblée.
+- **Envoi d'email (optionnel en dev)** : sans clé configurée, l'email d'invitation est
+  simplement consigné dans les logs de l'API (`LoggingEmailSender`) au lieu d'être
+  envoyé — pratique pour tester le flux sans compte SendGrid. Pour un envoi réel,
+  renseigner `SendGrid:ApiKey` (et éventuellement `SendGrid:FromEmail`/`FromName`) ainsi
+  que `Frontend:BaseUrl` (utilisé pour construire le lien `/join/{token}` dans l'email).
+
 ## Migrations EF Core
 
 ```bash

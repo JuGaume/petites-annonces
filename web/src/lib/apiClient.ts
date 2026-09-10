@@ -12,6 +12,40 @@ export interface AuthResponse {
   user: UserResponse
 }
 
+export interface GroupResponse {
+  id: number
+  name: string
+  description: string | null
+  createdByUserId: string
+  createdAt: string
+  memberCount: number
+  currentUserRole: 'Admin' | 'Member'
+}
+
+export interface GroupMemberResponse {
+  userId: string
+  displayName: string
+  email: string
+  role: 'Admin' | 'Member'
+  joinedAt: string
+}
+
+export interface InvitationResponse {
+  id: number
+  groupId: number
+  token: string
+  type: 'Link' | 'Email'
+  targetEmail: string | null
+  expiresAt: string | null
+  isActive: boolean
+}
+
+export interface InvitationPreviewResponse {
+  groupName: string
+  type: 'Link' | 'Email'
+  isValid: boolean
+}
+
 export class ApiError extends Error {
   status: number
 

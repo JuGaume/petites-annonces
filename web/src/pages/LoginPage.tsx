@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { ApiError } from '../lib/apiClient'
 import { GoogleSignInButton } from '../components/GoogleSignInButton'
@@ -7,6 +7,8 @@ import { GoogleSignInButton } from '../components/GoogleSignInButton'
 export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -18,7 +20,7 @@ export function LoginPage() {
     setIsSubmitting(true)
     try {
       await login(email, password)
-      navigate('/')
+      navigate(redirect)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Connexion impossible.')
     } finally {
@@ -64,7 +66,13 @@ export function LoginPage() {
       </div>
 
       <p className="text-center text-sm text-[var(--color-text-muted)]">
-        Pas encore de compte ? <Link to="/register" className="font-medium text-[var(--color-accent)]">Inscription</Link>
+        Pas encore de compte ?{' '}
+        <Link
+          to={`/register?redirect=${encodeURIComponent(redirect)}`}
+          className="font-medium text-[var(--color-accent)]"
+        >
+          Inscription
+        </Link>
       </p>
     </main>
   )

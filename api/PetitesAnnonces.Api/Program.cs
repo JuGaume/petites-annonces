@@ -1,11 +1,13 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PetitesAnnonces.Api.Auth;
 using PetitesAnnonces.Api.Data;
+using PetitesAnnonces.Api.Email;
 using PetitesAnnonces.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,7 +76,25 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAuthorizationHandler, GroupMembershipAuthorizationHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(GroupPolicies.Member, policy => policy.Requirements.Add(new GroupMembershipRequirement(requireAdmin: false)));
+    options.AddPolicy(GroupPolicies.Admin, policy => policy.Requirements.Add(new GroupMembershipRequirement(requireAdmin: true)));
+});
+
+builder.Services.Configure<SendGridOptions>(builder.Configuration.GetSection(SendGridOptions.SectionName));
+// Sans clé SendGrid configurée (dev/tests), on se contente de logguer l'email au lieu
+// de tenter un envoi réel.
+if (string.IsNullOrWhiteSpace(builder.Configuration[$"{SendGridOptions.SectionName}:ApiKey"]))
+{
+    builder.Services.AddSingleton<IEmailSender, LoggingEmailSender>();
+}
+else
+{
+    builder.Services.AddSingleton<IEmailSender, SendGridEmailSender>();
+}
 
 builder.Services.AddRateLimiter(options =>
 {
