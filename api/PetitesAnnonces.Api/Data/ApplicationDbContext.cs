@@ -45,6 +45,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.HasIndex(m => new { m.GroupId, m.UserId }).IsUnique();
             entity.Property(m => m.Role).HasConversion<string>().HasMaxLength(20);
+            entity.Property(m => m.EmailDigestEnabled).HasDefaultValue(true);
             entity.HasOne(m => m.Group)
                 .WithMany(g => g.Memberships)
                 .HasForeignKey(m => m.GroupId)

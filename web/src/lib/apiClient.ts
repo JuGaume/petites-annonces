@@ -20,6 +20,7 @@ export interface GroupResponse {
   createdAt: string
   memberCount: number
   currentUserRole: 'Admin' | 'Member'
+  emailDigestEnabled: boolean
 }
 
 export interface GroupMemberResponse {

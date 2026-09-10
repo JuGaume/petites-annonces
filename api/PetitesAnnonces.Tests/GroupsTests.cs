@@ -259,4 +259,41 @@ public class GroupsTests : IClassFixture<CustomWebApplicationFactory>
         var mine = await mineResponse.Content.ReadFromJsonAsync<List<GroupResponse>>();
         Assert.DoesNotContain(mine!, g => g.Id == groupB.Id);
     }
+
+    [Fact]
+    public async Task Create_Group_Defaults_To_Email_Digest_Enabled()
+    {
+        var (client, _) = await RegisterAndAuthenticateAsync();
+
+        var group = await CreateGroupAsync(client);
+
+        Assert.True(group.EmailDigestEnabled);
+    }
+
+    [Fact]
+    public async Task Member_Can_Opt_Out_Of_The_Email_Digest_For_A_Group()
+    {
+        var (client, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(client);
+
+        var patchResponse = await client.PatchAsJsonAsync(
+            $"/groups/{group.Id}/notifications", new UpdateGroupNotificationPreferenceRequest(false));
+        Assert.Equal(HttpStatusCode.NoContent, patchResponse.StatusCode);
+
+        var updated = await client.GetFromJsonAsync<GroupResponse>($"/groups/{group.Id}");
+        Assert.False(updated!.EmailDigestEnabled);
+    }
+
+    [Fact]
+    public async Task NonMember_Cannot_Change_Another_Groups_Email_Digest_Preference()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        var (outsider, _) = await RegisterAndAuthenticateAsync();
+        var response = await outsider.PatchAsJsonAsync(
+            $"/groups/{group.Id}/notifications", new UpdateGroupNotificationPreferenceRequest(false));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
 }

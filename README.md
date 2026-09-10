@@ -100,6 +100,19 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   WebSocket ne permet pas de poser l'en-tête `Authorization`) — géré automatiquement par
   le client (`web/src/lib/conversationsHub.ts`), rien à configurer.
 
+## Notifications email (digest quotidien)
+
+- Chaque membre reçoit, par groupe, un résumé des nouvelles annonces déposées depuis son
+  dernier envoi (jamais ses propres annonces). Désabonnement possible par groupe depuis
+  la page de détail du groupe (`GET/PATCH /groups/{id}/notifications`, via
+  `GroupMembership.EmailDigestEnabled`).
+- Tourne dans le processus de l'API (`DailyDigestService`, un `BackgroundService`), pas
+  de ressource séparée à cette échelle. Intervalle configurable via `Digest:IntervalHours`
+  (24 par défaut).
+- **Test manuel sans attendre le minuteur** : `POST /digest/run-now`, réservé au rôle
+  `Admin` (le compte seedé en dev convient). Comme pour les invitations, l'email est
+  consigné dans les logs de l'API sans clé SendGrid configurée.
+
 ## Migrations EF Core
 
 ```bash

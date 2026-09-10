@@ -88,9 +88,9 @@ public class InvitationsController(ApplicationDbContext db, UserManager<Applicat
         await db.SaveChangesAsync();
 
         var memberCount = await db.GroupMemberships.CountAsync(m => m.GroupId == invitation.GroupId);
-        var role = await db.GroupMemberships
+        var membership = await db.GroupMemberships
             .Where(m => m.GroupId == invitation.GroupId && m.UserId == user.Id)
-            .Select(m => m.Role)
+            .Select(m => new { m.Role, m.EmailDigestEnabled })
             .FirstAsync();
 
         return new GroupResponse(
@@ -100,6 +100,7 @@ public class InvitationsController(ApplicationDbContext db, UserManager<Applicat
             invitation.Group.CreatedByUserId,
             invitation.Group.CreatedAt,
             memberCount,
-            role.ToString());
+            membership.Role.ToString(),
+            membership.EmailDigestEnabled);
     }
 }

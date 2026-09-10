@@ -79,6 +79,24 @@ export function GroupDetailPage() {
     }
   }
 
+  async function toggleEmailDigest() {
+    if (!group) {
+      return
+    }
+
+    const nextValue = !group.emailDigestEnabled
+    setActionError(null)
+    try {
+      await apiJson(`/groups/${groupId}/notifications`, {
+        method: 'PATCH',
+        body: JSON.stringify({ emailDigestEnabled: nextValue }),
+      })
+      setGroup({ ...group, emailDigestEnabled: nextValue })
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Impossible de mettre à jour cette préférence.')
+    }
+  }
+
   async function handleInviteByEmail(event: FormEvent) {
     event.preventDefault()
     setActionError(null)
@@ -150,6 +168,13 @@ export function GroupDetailPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="border-t border-[var(--color-border)] pt-4">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={group.emailDigestEnabled} onChange={toggleEmailDigest} />
+          Recevoir le résumé quotidien des nouvelles annonces de ce groupe par email
+        </label>
       </section>
 
       {isAdmin && (

@@ -9,7 +9,10 @@ public record GroupResponse(
     string CreatedByUserId,
     DateTimeOffset CreatedAt,
     int MemberCount,
-    string CurrentUserRole);
+    string CurrentUserRole,
+    bool EmailDigestEnabled);
+
+public record UpdateGroupNotificationPreferenceRequest(bool EmailDigestEnabled);
 
 public record GroupMemberResponse(
     string UserId,

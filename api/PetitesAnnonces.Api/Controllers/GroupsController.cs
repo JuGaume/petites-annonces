@@ -60,7 +60,7 @@ public class GroupsController(
 
         await db.SaveChangesAsync();
 
-        return new GroupResponse(group.Id, group.Name, group.Description, group.CreatedByUserId, group.CreatedAt, MemberCount: 1, GroupMemberRole.Admin.ToString());
+        return new GroupResponse(group.Id, group.Name, group.Description, group.CreatedByUserId, group.CreatedAt, MemberCount: 1, GroupMemberRole.Admin.ToString(), EmailDigestEnabled: true);
     }
 
     [HttpGet]
@@ -78,7 +78,8 @@ public class GroupsController(
                 m.Group.CreatedByUserId,
                 m.Group.CreatedAt,
                 m.Group.Memberships.Count,
-                m.Role.ToString()))
+                m.Role.ToString(),
+                m.EmailDigestEnabled))
             .ToListAsync();
 
         return groups;
@@ -109,6 +110,22 @@ public class GroupsController(
             .ToListAsync();
 
         return members;
+    }
+
+    [HttpPatch("{groupId:int}/notifications")]
+    [Authorize(Policy = GroupPolicies.Member)]
+    public async Task<IActionResult> UpdateNotificationPreference(int groupId, UpdateGroupNotificationPreferenceRequest request)
+    {
+        var membership = await db.GroupMemberships
+            .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == CurrentUserId);
+        if (membership is null)
+        {
+            return NotFound();
+        }
+
+        membership.EmailDigestEnabled = request.EmailDigestEnabled;
+        await db.SaveChangesAsync();
+        return NoContent();
     }
 
     [HttpPost("{groupId:int}/invitations/link")]
@@ -215,7 +232,8 @@ public class GroupsController(
                 m.Group.CreatedByUserId,
                 m.Group.CreatedAt,
                 m.Group.Memberships.Count,
-                m.Role.ToString()))
+                m.Role.ToString(),
+                m.EmailDigestEnabled))
             .FirstOrDefaultAsync();
     }
 

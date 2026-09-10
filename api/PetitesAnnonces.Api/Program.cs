@@ -14,6 +14,7 @@ using PetitesAnnonces.Api.Data;
 using PetitesAnnonces.Api.Email;
 using PetitesAnnonces.Api.Hubs;
 using PetitesAnnonces.Api.Models;
+using PetitesAnnonces.Api.Notifications;
 using PetitesAnnonces.Api.Storage;
 using PetitesAnnonces.Api.Validation;
 
@@ -134,6 +135,14 @@ else
 }
 
 builder.Services.AddScoped<IValidator<CreateListingRequest>, CreateListingRequestValidator>();
+
+builder.Services.Configure<DigestOptions>(builder.Configuration.GetSection(DigestOptions.SectionName));
+builder.Services.AddScoped<IDigestBuilder, DigestBuilder>();
+// Enregistré comme singleton ET comme hosted service (même instance) pour pouvoir
+// aussi être injecté dans DigestController, qui permet de déclencher un envoi
+// immédiatement sans attendre le minuteur (pratique en dev).
+builder.Services.AddSingleton<DailyDigestService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<DailyDigestService>());
 
 builder.Services.AddRateLimiter(options =>
 {
