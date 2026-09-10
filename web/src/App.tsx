@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
+import { AdminRoute } from './components/AdminRoute'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AdminPage } from './pages/AdminPage'
 import { ConversationsListPage } from './pages/ConversationsListPage'
 import { ConversationThreadPage } from './pages/ConversationThreadPage'
 import { CreateListingPage } from './pages/CreateListingPage'
@@ -76,6 +78,14 @@ function App() {
               <ProtectedRoute>
                 <ConversationThreadPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
             }
           />
         </Routes>

@@ -25,6 +25,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Message> Messages => Set<Message>();
 
+    public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -122,6 +124,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<AuditLogEntry>(entity =>
+        {
+            entity.Property(e => e.Action).HasMaxLength(60).IsRequired();
+            entity.Property(e => e.TargetId).HasMaxLength(100);
+            entity.Property(e => e.Details).HasMaxLength(300);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

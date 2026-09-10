@@ -113,6 +113,18 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   `Admin` (le compte seedé en dev convient). Comme pour les invitations, l'email est
   consigné dans les logs de l'API sans clé SendGrid configurée.
 
+## Interface admin
+
+- Section `/admin` (lien visible sur la page d'accueil pour un compte `Admin`, seul le
+  compte seedé en dev par défaut) : utilisateurs (désactivation/réactivation), groupes,
+  annonces (visualisation, suppression), catégories (création/suppression), journal
+  d'audit minimal des actions ci-dessus.
+- Désactiver un compte s'appuie sur le verrouillage natif d'ASP.NET Identity
+  (`LockoutEnd`) : login et refresh sont bloqués tant que le compte est désactivé, sans
+  colonne supplémentaire.
+- Une catégorie utilisée par au moins une annonce ne peut pas être supprimée (409/400
+  explicite plutôt qu'une erreur de contrainte en base).
+
 ## Migrations EF Core
 
 ```bash

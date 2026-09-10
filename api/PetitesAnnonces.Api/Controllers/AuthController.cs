@@ -73,6 +73,11 @@ public class AuthController(
             return Unauthorized(new { message = "Email ou mot de passe incorrect." });
         }
 
+        if (await userManager.IsLockedOutAsync(user))
+        {
+            return Unauthorized(new { message = "Ce compte a été désactivé." });
+        }
+
         return await IssueTokensAsync(user);
     }
 
@@ -147,6 +152,11 @@ public class AuthController(
         if (user is null)
         {
             return Unauthorized();
+        }
+
+        if (await userManager.IsLockedOutAsync(user))
+        {
+            return Unauthorized(new { message = "Ce compte a été désactivé." });
         }
 
         // Rotation : on révoque l'ancien token et on en émet un nouveau.

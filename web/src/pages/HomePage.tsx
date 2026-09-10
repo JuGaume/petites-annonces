@@ -51,6 +51,11 @@ export function HomePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Mes groupes</h1>
         <div className="flex items-center gap-3">
+          {user?.roles.includes('Admin') && (
+            <Link to="/admin" className="text-sm font-medium text-[var(--color-accent)]">
+              Admin
+            </Link>
+          )}
           <Link to="/conversations" className="text-sm font-medium text-[var(--color-accent)]">
             Messages
           </Link>

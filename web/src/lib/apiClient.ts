@@ -121,6 +121,44 @@ export interface MessageResponse {
   createdAt: string
 }
 
+export interface AdminUserResponse {
+  id: string
+  email: string
+  displayName: string
+  roles: string[]
+  isDisabled: boolean
+}
+
+export interface AdminGroupResponse {
+  id: number
+  name: string
+  description: string | null
+  createdByUserId: string
+  createdAt: string
+  memberCount: number
+}
+
+export interface AdminListingResponse {
+  id: number
+  title: string
+  groupId: number
+  groupName: string
+  authorUserId: string
+  authorDisplayName: string
+  status: ListingStatus
+  createdAt: string
+}
+
+export interface AuditLogEntryResponse {
+  id: number
+  adminUserId: string
+  adminDisplayName: string
+  action: string
+  targetId: string | null
+  details: string | null
+  createdAt: string
+}
+
 export class ApiError extends Error {
   status: number
 
