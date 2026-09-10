@@ -10,7 +10,8 @@ Leboncoin.
 
 - `api/` — ASP.NET Core Web API (.NET 10) + tests xUnit
 - `web/` — Application React (Vite + TypeScript + Tailwind)
-- `landing/` — Page d'accueil publique (à construire en Phase 7)
+- `landing/` — Page d'accueil publique, statique (HTML/CSS, pas de build) et indexable,
+  à l'inverse du reste du site (voir « Landing page, sécurité, performance » ci-dessous)
 
 ## Prérequis locaux
 
@@ -124,6 +125,51 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   colonne supplémentaire.
 - Une catégorie utilisée par au moins une annonce ne peut pas être supprimée (409/400
   explicite plutôt qu'une erreur de contrainte en base).
+
+## Landing page, sécurité, performance
+
+- **Landing page publique** (`landing/`) : page statique (aucun outil de build, ouvrable
+  directement ou servie via `python3 -m http.server`), pensée pour être indexée — à
+  l'opposé du reste du site (`web/`), une application privée réservée aux membres
+  connectés. Elle porte son propre `robots.txt` (indexation autorisée) et sitemap ; avant
+  tout déploiement, remplacer le domaine `petites-annonces.example` par le vrai domaine
+  dans `landing/index.html`, `landing/robots.txt` et `landing/sitemap.xml` (voir
+  `landing/README.md`).
+- **`web/` non indexable** : balise `<meta name="robots" content="noindex, nofollow">`
+  dans `web/index.html` et `web/public/robots.txt` bloquant tout crawl — l'app n'a
+  vocation à être visitée que par des membres connectés, jamais listée dans un moteur de
+  recherche.
+- **En-têtes de sécurité** : `Strict-Transport-Security` (hors dev), `X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, ajoutés à toutes les
+  réponses de l'API (`Program.cs`). Pas de `Content-Security-Policy` : l'API ne sert que
+  du JSON et les fichiers statiques des photos, pas de HTML applicatif.
+- **CORS** : origines autorisées restreintes à `Cors:FrontendOrigins` (config, pas de
+  wildcard) — à mettre à jour avec le vrai domaine du front avant déploiement.
+- **Secrets** : aucun secret commité — mots de passe/clés de dev dans
+  `appsettings.Development.json` uniquement, à remplacer par la configuration de
+  l'environnement (Azure App Service, variables d'env, user-secrets) en production, comme
+  déjà indiqué pour le compte admin seedé, SendGrid, Google OAuth et le stockage Azure.
+- **Audit des autorisations** : chaque contrôleur a été revu (attributs `[Authorize]` /
+  policy au niveau classe, `[AllowAnonymous]` explicite pour les routes publiques —
+  inscription, connexion, refresh, aperçu d'invitation — et vérifications de propriété en
+  code, ex. `Forbid()` sur les actions liées à une annonce ou une conversation).
+- **Cache des catégories** : `GET /categories` (liste peu volatile) est mis en cache en
+  mémoire côté API (`IMemoryCache`, 10 min), invalidé explicitement à la
+  création/suppression d'une catégorie par `AdminController`.
+- **Index base de données** : ajout d'un index unique sur `RefreshToken.TokenHash`
+  (recherché à chaque appel `/auth/refresh`, jusqu'ici non indexé) ; les index déjà en
+  place pour les flux paginés (annonces par groupe/catégorie/statut, messages par
+  conversation, journal d'audit par date) restent inchangés.
+- **Poids des images** : en plus de la miniature (480px), l'image « originale » affichée
+  sur la page de détail est désormais elle aussi recompressée à l'upload (1600px max,
+  JPEG qualité 85 — `Images/ThumbnailGenerator.cs`) plutôt que stockée telle quelle
+  jusqu'à 5 Mo.
+- **Chargement différé (lazy loading)** : les images distantes (miniatures du fil
+  d'annonces et des conversations, photos de la page de détail hors la première) portent
+  `loading="lazy"`.
+- **Vérification** : `dotnet list package --vulnerable` et `npm audit` ne remontent aucune
+  dépendance vulnérable à ce jour ; passer un outil comme Lighthouse sur `landing/` avant
+  mise en production pour valider perf/SEO.
 
 ## Migrations EF Core
 

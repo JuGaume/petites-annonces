@@ -1,0 +1,4 @@
+# Application privée : contenu non public, à ne pas indexer (spec §10, SEO).
+# Seule la landing page publique (landing/) doit être indexable.
+User-agent: *
+Disallow: /

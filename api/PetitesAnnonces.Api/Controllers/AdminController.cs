@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using PetitesAnnonces.Api.Auth;
+using PetitesAnnonces.Api.Caching;
 using PetitesAnnonces.Api.Contracts;
 using PetitesAnnonces.Api.Data;
 using PetitesAnnonces.Api.Models;
@@ -21,7 +23,8 @@ namespace PetitesAnnonces.Api.Controllers;
 public class AdminController(
     ApplicationDbContext db,
     UserManager<ApplicationUser> userManager,
-    IBlobStorageService blobStorage) : ControllerBase
+    IBlobStorageService blobStorage,
+    IMemoryCache cache) : ControllerBase
 {
     private const int MaxCategoryNameLength = 80;
 
@@ -175,6 +178,7 @@ public class AdminController(
         var category = new Category { Name = name };
         db.Categories.Add(category);
         await LogAdminActionAsync("CreateCategory", null, name);
+        cache.Remove(CacheKeys.Categories);
 
         return new CategoryResponse(category.Id, category.Name);
     }
@@ -195,6 +199,7 @@ public class AdminController(
 
         db.Categories.Remove(category);
         await LogAdminActionAsync("DeleteCategory", categoryId.ToString(), category.Name);
+        cache.Remove(CacheKeys.Categories);
         return NoContent();
     }
 

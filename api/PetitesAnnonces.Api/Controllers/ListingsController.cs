@@ -110,7 +110,8 @@ public class ListingsController(
         foreach (var image in request.Images)
         {
             await using var originalStream = image.OpenReadStream();
-            var original = await blobStorage.SaveAsync(originalStream, image.FileName, image.ContentType);
+            using var optimizedStream = await ThumbnailGenerator.CreateOptimizedOriginalAsync(originalStream);
+            var original = await blobStorage.SaveAsync(optimizedStream, image.FileName, ThumbnailGenerator.OptimizedContentType);
 
             await using var imageStreamForThumbnail = image.OpenReadStream();
             using var thumbnailStream = await ThumbnailGenerator.CreateAsync(imageStreamForThumbnail);

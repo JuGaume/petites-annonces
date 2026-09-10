@@ -158,6 +158,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -189,7 +190,28 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+if (!app.Environment.IsDevelopment())
+{
+    // HSTS : force le navigateur à toujours revenir en HTTPS, y compris sur une
+    // première visite tapée en http:// (spec §8, revue sécurité). Sans effet utile en
+    // dev (HTTP local), donc réservé à la prod.
+    app.UseHsts();
+}
+
 app.UseHttpsRedirection();
+
+// En-têtes de sécurité de base, appliqués à toutes les réponses (spec §8). Pas de
+// Content-Security-Policy : cette API ne sert pas de HTML applicatif (JSON + fichiers
+// statiques des photos), le risque qu'une CSP couvrirait ici est marginal.
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    await next();
+});
 
 if (!useAzureBlobStorage)
 {

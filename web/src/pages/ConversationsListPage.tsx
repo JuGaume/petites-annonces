@@ -47,6 +47,7 @@ export function ConversationsListPage() {
                     <img
                       src={conversation.listingThumbnailUrl}
                       alt={conversation.listingTitle}
+                      loading="lazy"
                       className="h-full w-full object-cover"
                     />
                   )}

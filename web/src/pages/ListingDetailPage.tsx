@@ -110,11 +110,15 @@ export function ListingDetailPage() {
 
       {listing.images.length > 0 && (
         <div className="flex snap-x gap-2 overflow-x-auto">
-          {listing.images.map((image) => (
+          {listing.images.map((image, index) => (
             <img
               key={image.id}
               src={image.url}
               alt={listing.title}
+              // La première photo est visible immédiatement (au-dessus de la ligne de
+              // flottaison) ; les suivantes, dans le carrousel horizontal, ne le sont pas
+              // forcément (spec §9, performance).
+              loading={index === 0 ? "eager" : "lazy"}
               className="aspect-square w-full flex-none snap-center rounded object-cover"
             />
           ))}

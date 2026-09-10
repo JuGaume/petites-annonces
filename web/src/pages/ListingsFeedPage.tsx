@@ -153,7 +153,12 @@ export function ListingsFeedPage() {
             >
               <div className="aspect-square bg-[var(--color-bg)]">
                 {listing.thumbnailUrl && (
-                  <img src={listing.thumbnailUrl} alt={listing.title} className="h-full w-full object-cover" />
+                  <img
+                    src={listing.thumbnailUrl}
+                    alt={listing.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 )}
               </div>
               <div className="flex flex-col gap-0.5 p-2">

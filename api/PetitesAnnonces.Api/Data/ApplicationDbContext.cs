@@ -34,6 +34,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<RefreshToken>(entity =>
         {
             entity.HasIndex(rt => rt.UserId);
+            // Recherché à chaque appel /auth/refresh — index manquant jusqu'ici (spec §9,
+            // revue performance), donc balayage complet de la table sans lui.
+            entity.HasIndex(rt => rt.TokenHash).IsUnique();
             entity.Property(rt => rt.TokenHash).HasMaxLength(256).IsRequired();
         });
 

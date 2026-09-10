@@ -1,0 +1,5 @@
+# Page publique : indexation autorisée (à l'inverse du reste du site, voir web/public/robots.txt).
+User-agent: *
+Allow: /
+
+Sitemap: https://petites-annonces.example/sitemap.xml
