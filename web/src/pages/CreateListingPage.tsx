@@ -4,6 +4,7 @@ import {
   apiFetch,
   apiJson,
   ApiError,
+  extractErrorMessage,
   type CategoryResponse,
   type ContactMode,
   type ListingDetailResponse,
@@ -76,8 +77,8 @@ export function CreateListingPage() {
     try {
       const response = await apiFetch(`/groups/${groupId}/listings`, { method: 'POST', body: form })
       if (!response.ok) {
-        const body = await response.json().catch(() => ({ message: 'Impossible de créer cette annonce.' }))
-        throw new ApiError(response.status, body.message ?? 'Impossible de créer cette annonce.')
+        const body = await response.json().catch(() => null)
+        throw new ApiError(response.status, extractErrorMessage(body, 'Impossible de créer cette annonce.'))
       }
       const listing: ListingDetailResponse = await response.json()
       navigate(`/groups/${groupId}/listings/${listing.id}`)

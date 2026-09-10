@@ -130,6 +130,40 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Extrait un message lisible d'une réponse d'erreur de l'API. Gère à la fois le format
+ * `{ message }` (ex. AuthController) et le `ValidationProblemDetails` standard d'ASP.NET
+ * Core (`{ errors: { champ: ["..."] }, title, detail }`, utilisé par `ValidationProblem(...)`
+ * un peu partout) — sans quoi ces erreurs de validation retombaient sur un message
+ * générique ne disant rien de la vraie cause.
+ */
+export function extractErrorMessage(body: unknown, fallback: string): string {
+  if (body && typeof body === 'object') {
+    const problem = body as { message?: string; errors?: Record<string, string[]>; detail?: string; title?: string }
+
+    if (problem.message) {
+      return problem.message
+    }
+
+    if (problem.errors) {
+      const messages = Object.values(problem.errors).flat().filter(Boolean)
+      if (messages.length > 0) {
+        return messages.join(' ')
+      }
+    }
+
+    if (problem.detail) {
+      return problem.detail
+    }
+
+    if (problem.title) {
+      return problem.title
+    }
+  }
+
+  return fallback
+}
+
 let accessToken: string | null = null
 
 export function setAccessToken(token: string | null) {
@@ -192,8 +226,8 @@ async function tryRefresh(): Promise<boolean> {
 export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await apiFetch(path, init)
   if (!response.ok) {
-    const body = await response.json().catch(() => ({ message: response.statusText }))
-    throw new ApiError(response.status, body.message ?? 'Une erreur est survenue.')
+    const body = await response.json().catch(() => null)
+    throw new ApiError(response.status, extractErrorMessage(body, response.statusText || 'Une erreur est survenue.'))
   }
   return response.json() as Promise<T>
 }
