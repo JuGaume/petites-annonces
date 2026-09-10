@@ -178,3 +178,49 @@ cd api
 dotnet ef migrations add NomDeLaMigration --project PetitesAnnonces.Api --startup-project PetitesAnnonces.Api
 dotnet ef database update --project PetitesAnnonces.Api --startup-project PetitesAnnonces.Api
 ```
+
+## CI/CD et déploiement Azure
+
+- **CI** (`.github/workflows/ci.yml`) : à chaque push et pull request, build + tests
+  API (`dotnet build`/`dotnet test`) et build + lint front (`npm run build`/`npm run
+  lint`). Ne nécessite aucune configuration — actif immédiatement.
+- **CD** (`.github/workflows/deploy.yml`) : sur push vers `main`, applique les
+  migrations EF Core sur la base Azure SQL de production puis déploie l'API sur Azure
+  App Service et le front sur Azure Static Web Apps. **Inactif tant que l'infra Azure
+  n'existe pas et que les secrets/variables ci-dessous ne sont pas renseignés** —
+  chaque job est gardé par la présence du secret correspondant, donc rien n'échoue
+  entre-temps, les jobs sont simplement ignorés.
+
+Ce dépôt ne suppose aucun abonnement Azure existant. Pour activer le déploiement,
+quand tu seras prêt :
+
+1. **Provisionner l'infrastructure** : soit à la main dans le [portail
+   Azure](https://portal.azure.com) (App Service Linux/.NET 10, Azure SQL, un
+   compte de stockage avec un conteneur blob, une Static Web App), soit en une
+   commande avec le template Bicep fourni — voir `infra/bicep/README.md` pour le pas
+   à pas complet (`az group create` puis `az deployment group create`).
+2. **Créer un compte [SendGrid](https://sendgrid.com)** (hors Azure) pour l'envoi
+   d'email en production, et récupérer une clé API.
+3. **Renseigner les secrets et variables GitHub** (Settings → Secrets and variables →
+   Actions, sur ce dépôt) :
+
+   | Nom | Type | Description |
+   | --- | --- | --- |
+   | `AZURE_WEBAPP_NAME` | Variable | Nom de l'App Service (sortie `webAppName` du déploiement Bicep) |
+   | `AZURE_WEBAPP_PUBLISH_PROFILE` | Secret | Profil de publication de l'App Service (`az webapp deployment list-publishing-profiles`) |
+   | `AZURE_SQL_CONNECTION_STRING` | Secret | Chaîne de connexion Azure SQL, utilisée pour appliquer les migrations depuis la CI |
+   | `AZURE_STATIC_WEB_APPS_API_TOKEN` | Secret | Jeton de déploiement de la Static Web App (`az staticwebapp secrets list`) |
+   | `VITE_API_BASE_URL` | Variable | URL publique de l'API (ex. `https://<webAppName>.azurewebsites.net`) — compilée dans le bundle front |
+   | `VITE_GOOGLE_CLIENT_ID` | Variable | Optionnel, si la connexion Google est activée en prod |
+
+4. **Configurer l'App Service** (config de l'API en production, jamais commitée —
+   voir `infra/bicep/README.md` pour la commande `az webapp config appsettings
+   set` complète) : `ConnectionStrings__DefaultConnection`, `Jwt__SigningKey`
+   (générer une nouvelle clé, ne jamais réutiliser celle de dev), `Jwt__Issuer`,
+   `Jwt__Audience`, `Seed__AdminEmail`/`Seed__AdminPassword`,
+   `Cors__FrontendOrigins__0` (URL de la Static Web App), `Frontend__BaseUrl`,
+   `SendGrid__ApiKey`, `BlobStorage__AzureConnectionString`,
+   `BlobStorage__ContainerName`.
+5. Pousser sur `main` : `deploy.yml` se déclenche automatiquement. Suit ensuite un
+   smoke test manuel des flux principaux (inscription, création de groupe, dépôt
+   d'annonce, message, digest email) sur l'environnement réel.
