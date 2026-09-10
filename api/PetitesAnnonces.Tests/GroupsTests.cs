@@ -8,6 +8,10 @@ namespace PetitesAnnonces.Tests;
 
 public class GroupsTests : IClassFixture<CustomWebApplicationFactory>
 {
+    // 1x1 PNG transparent minimal (même image de test que ListingsTests).
+    private static readonly byte[] TinyPng = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
+
     private readonly CustomWebApplicationFactory _factory;
 
     public GroupsTests(CustomWebApplicationFactory factory)
@@ -295,5 +299,78 @@ public class GroupsTests : IClassFixture<CustomWebApplicationFactory>
             $"/groups/{group.Id}/notifications", new UpdateGroupNotificationPreferenceRequest(false));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_Can_Upload_And_Remove_The_Group_Image()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        using var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(TinyPng);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(fileContent, "image", "photo.png");
+
+        var uploadResponse = await owner.PostAsync($"/groups/{group.Id}/image", form);
+        uploadResponse.EnsureSuccessStatusCode();
+        var updated = await uploadResponse.Content.ReadFromJsonAsync<GroupResponse>();
+        Assert.False(string.IsNullOrWhiteSpace(updated!.ImageUrl));
+
+        var deleteResponse = await owner.DeleteAsync($"/groups/{group.Id}/image");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        var afterDelete = await owner.GetFromJsonAsync<GroupResponse>($"/groups/{group.Id}");
+        Assert.Null(afterDelete!.ImageUrl);
+    }
+
+    [Fact]
+    public async Task NonAdmin_Member_Cannot_Upload_The_Group_Image()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+
+        var link = (await (await owner.PostAsync($"/groups/{group.Id}/invitations/link", content: null))
+            .Content.ReadFromJsonAsync<InvitationResponse>())!;
+        var (member, _) = await RegisterAndAuthenticateAsync();
+        await member.PostAsync($"/invitations/{link.Token}/accept", content: null);
+
+        using var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(TinyPng);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(fileContent, "image", "photo.png");
+
+        var response = await member.PostAsync($"/groups/{group.Id}/image", form);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Mine_Includes_Recent_Available_Listing_Thumbnails_As_Preview()
+    {
+        var (owner, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(owner);
+        var categoryId = (await owner.GetFromJsonAsync<List<CategoryResponse>>("/categories"))!.First().Id;
+
+        var form = new MultipartFormDataContent
+        {
+            { new StringContent("Vélo"), "Title" },
+            { new StringContent("Sale"), "Mode" },
+            { new StringContent(categoryId.ToString()), "CategoryId" },
+            { new StringContent("DirectContact"), "ContactMode" },
+            { new StringContent("10"), "Price" },
+            { new StringContent("06 00 00 00 00"), "ContactDetails" },
+        };
+        var fileContent = new ByteArrayContent(TinyPng);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(fileContent, "Images", "photo.png");
+
+        var createResponse = await owner.PostAsync($"/groups/{group.Id}/listings", form);
+        createResponse.EnsureSuccessStatusCode();
+
+        var groups = await owner.GetFromJsonAsync<List<GroupResponse>>("/groups");
+        var updatedGroup = groups!.Single(g => g.Id == group.Id);
+
+        Assert.Single(updatedGroup.ListingPreviewUrls);
     }
 }

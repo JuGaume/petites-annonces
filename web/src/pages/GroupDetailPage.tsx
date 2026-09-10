@@ -1,8 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+  apiFetch,
   apiJson,
   ApiError,
+  extractErrorMessage,
   type GroupMemberResponse,
   type GroupResponse,
   type InvitationResponse,
@@ -18,6 +20,7 @@ export function GroupDetailPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
+  const [isSavingImage, setIsSavingImage] = useState(false)
 
   useEffect(() => {
     if (!groupId) {
@@ -76,6 +79,48 @@ export function GroupDetailPage() {
       // Presse-papiers indisponible (contexte non sécurisé, permission refusée...) :
       // le lien reste affiché à l'écran, la copie manuelle reste possible.
       setNotice(null)
+    }
+  }
+
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) {
+      return
+    }
+
+    setActionError(null)
+    setIsSavingImage(true)
+    try {
+      const form = new FormData()
+      form.set('image', file)
+      const response = await apiFetch(`/groups/${groupId}/image`, { method: 'POST', body: form })
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        throw new ApiError(response.status, extractErrorMessage(body, "Impossible de mettre à jour l'image."))
+      }
+      setGroup(await response.json())
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : "Impossible de mettre à jour l'image du groupe.")
+    } finally {
+      setIsSavingImage(false)
+    }
+  }
+
+  async function handleDeleteImage() {
+    if (!group) {
+      return
+    }
+
+    setActionError(null)
+    setIsSavingImage(true)
+    try {
+      await apiJson(`/groups/${groupId}/image`, { method: 'DELETE' })
+      setGroup({ ...group, imageUrl: null })
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : "Impossible de retirer l'image du groupe.")
+    } finally {
+      setIsSavingImage(false)
     }
   }
 
@@ -141,10 +186,39 @@ export function GroupDetailPage() {
         ← Mes groupes
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-semibold">{group.name}</h1>
-        {group.description && <p className="text-sm text-[var(--color-text-muted)]">{group.description}</p>}
+      <div className="flex items-center gap-3">
+        <div className="h-16 w-16 flex-none overflow-hidden rounded bg-[var(--color-bg)]">
+          {group.imageUrl && <img src={group.imageUrl} alt="" className="h-full w-full object-cover" />}
+        </div>
+        <div className="min-w-0">
+          <h1 className="truncate text-2xl font-semibold">{group.name}</h1>
+          {group.description && <p className="text-sm text-[var(--color-text-muted)]">{group.description}</p>}
+        </div>
       </div>
+
+      {isAdmin && (
+        <div className="flex gap-2">
+          <label className="cursor-pointer rounded border border-[var(--color-border)] px-3 py-2 text-sm">
+            {isSavingImage ? 'Envoi...' : "Changer l'image du groupe"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageChange}
+              disabled={isSavingImage}
+              className="hidden"
+            />
+          </label>
+          {group.imageUrl && (
+            <button
+              onClick={handleDeleteImage}
+              disabled={isSavingImage}
+              className="rounded border border-[var(--color-border)] px-3 py-2 text-sm disabled:opacity-60"
+            >
+              Retirer
+            </button>
+          )}
+        </div>
+      )}
 
       <Link
         to={`/groups/${group.id}/listings`}

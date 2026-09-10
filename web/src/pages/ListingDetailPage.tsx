@@ -40,6 +40,22 @@ export function ListingDetailPage() {
 
   const isAuthor = listing?.authorUserId === user?.id
 
+  async function toggleFavorite() {
+    if (!listing) {
+      return
+    }
+
+    const nextIsFavorite = !listing.isFavorite
+    setListing({ ...listing, isFavorite: nextIsFavorite })
+    try {
+      await apiJson(`/groups/${groupId}/listings/${listingId}/favorite`, {
+        method: nextIsFavorite ? 'PUT' : 'DELETE',
+      })
+    } catch {
+      setListing((current) => (current ? { ...current, isFavorite: !nextIsFavorite } : current))
+    }
+  }
+
   async function updateStatus(status: ListingStatus) {
     setIsBusy(true)
     setActionError(null)
@@ -128,11 +144,21 @@ export function ListingDetailPage() {
       <div>
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-2xl font-semibold">{listing.title}</h1>
-          {listing.status !== 'Available' && (
-            <span className="whitespace-nowrap rounded bg-[var(--color-bg)] px-2 py-1 text-xs font-medium text-[var(--color-accent)]">
-              {STATUS_LABELS[listing.status]}
-            </span>
-          )}
+          <div className="flex flex-none items-center gap-2">
+            {listing.status !== 'Available' && (
+              <span className="whitespace-nowrap rounded bg-[var(--color-bg)] px-2 py-1 text-xs font-medium text-[var(--color-accent)]">
+                {STATUS_LABELS[listing.status]}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={toggleFavorite}
+              aria-label={listing.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              className="text-2xl leading-none text-[var(--color-accent)]"
+            >
+              {listing.isFavorite ? '♥' : '♡'}
+            </button>
+          </div>
         </div>
         <p className="text-lg font-medium">
           {listing.price !== null ? `${listing.price} €` : MODE_LABELS[listing.mode]}

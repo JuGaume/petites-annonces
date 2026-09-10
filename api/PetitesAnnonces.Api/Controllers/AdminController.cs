@@ -107,6 +107,11 @@ public class AdminController(
         // il faut les nettoyer explicitement avant.
         await DeleteListingImagesAsync(db.ListingImages.Where(i => i.Listing!.GroupId == groupId));
 
+        if (group.ImageStoragePath is not null)
+        {
+            await blobStorage.DeleteAsync(group.ImageStoragePath);
+        }
+
         db.Groups.Remove(group);
         await LogAdminActionAsync("DeleteGroup", groupId.ToString(), group.Name);
         return NoContent();

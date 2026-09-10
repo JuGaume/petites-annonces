@@ -33,6 +33,7 @@ public class ListingsController(
         int groupId,
         [FromQuery] int? categoryId,
         [FromQuery] ListingStatus? status,
+        [FromQuery] string? search,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -50,6 +51,18 @@ public class ListingsController(
             query = query.Where(l => l.Status == status);
         }
 
+        var trimmedSearch = search?.Trim();
+        if (!string.IsNullOrEmpty(trimmedSearch))
+        {
+            // .ToLower() des deux côtés plutôt que StringComparison.OrdinalIgnoreCase (non
+            // traduisible en SQL) : donne un résultat insensible à la casse identique sur
+            // SQL Server et sur le fournisseur InMemory des tests.
+            var pattern = trimmedSearch.ToLower();
+            query = query.Where(l =>
+                l.Title.ToLower().Contains(pattern) || (l.Description != null && l.Description.ToLower().Contains(pattern)));
+        }
+
+        var currentUserId = CurrentUserId;
         var totalCount = await query.CountAsync();
         var items = await query
             .OrderByDescending(l => l.CreatedAt)
@@ -63,7 +76,8 @@ public class ListingsController(
                 l.Status.ToString(),
                 l.Category!.Name,
                 l.Images.OrderBy(i => i.Position).Select(i => i.ThumbnailUrl).FirstOrDefault(),
-                l.CreatedAt))
+                l.CreatedAt,
+                db.Favorites.Any(f => f.UserId == currentUserId && f.ListingId == l.Id)))
             .ToListAsync();
 
         return new PagedResult<ListingSummaryResponse>(items, page, pageSize, totalCount);
@@ -195,6 +209,7 @@ public class ListingsController(
             query = query.Where(l => l.Id == listingId);
         }
 
+        var currentUserId = CurrentUserId;
         return query
             .Join(db.Users, l => l.AuthorUserId, u => u.Id, (l, u) => new { Listing = l, Author = u })
             .Select(x => new ListingDetailResponse(
@@ -213,6 +228,7 @@ public class ListingsController(
                 x.Listing.CreatedAt,
                 x.Listing.Images.OrderBy(i => i.Position)
                     .Select(i => new ListingImageResponse(i.Id, i.Url, i.ThumbnailUrl))
-                    .ToList()));
+                    .ToList(),
+                db.Favorites.Any(f => f.UserId == currentUserId && f.ListingId == x.Listing.Id)));
     }
 }

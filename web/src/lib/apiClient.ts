@@ -5,6 +5,7 @@ export interface UserResponse {
   email: string
   displayName: string
   roles: string[]
+  photoUrl: string | null
 }
 
 export interface AuthResponse {
@@ -16,11 +17,13 @@ export interface GroupResponse {
   id: number
   name: string
   description: string | null
+  imageUrl: string | null
   createdByUserId: string
   createdAt: string
   memberCount: number
   currentUserRole: 'Admin' | 'Member'
   emailDigestEnabled: boolean
+  listingPreviewUrls: string[]
 }
 
 export interface GroupMemberResponse {
@@ -71,6 +74,7 @@ export interface ListingSummaryResponse {
   categoryName: string
   thumbnailUrl: string | null
   createdAt: string
+  isFavorite: boolean
 }
 
 export interface ListingDetailResponse {
@@ -88,6 +92,27 @@ export interface ListingDetailResponse {
   contactDetails: string | null
   createdAt: string
   images: ListingImageResponse[]
+  isFavorite: boolean
+}
+
+export interface FavoriteListingResponse {
+  listingId: number
+  groupId: number
+  groupName: string
+  title: string
+  price: number | null
+  mode: ListingMode
+  status: ListingStatus
+  thumbnailUrl: string | null
+  favoritedAt: string
+}
+
+export interface AccountResponse {
+  id: string
+  email: string
+  displayName: string
+  phoneNumber: string | null
+  photoUrl: string | null
 }
 
 export interface PagedResult<T> {

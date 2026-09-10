@@ -9,4 +9,9 @@ namespace PetitesAnnonces.Api.Models;
 public class ApplicationUser : IdentityUser
 {
     public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>Clé interne de stockage de la photo de profil (spec Phase 9), <c>null</c> si aucune n'a été déposée.</summary>
+    public string? PhotoStoragePath { get; set; }
+
+    public string? PhotoUrl { get; set; }
 }

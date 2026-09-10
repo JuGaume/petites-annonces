@@ -12,6 +12,11 @@ public class Group
 
     public string? Description { get; set; }
 
+    /// <summary>Clé interne de stockage de l'image du groupe (spec Phase 9), <c>null</c> si aucune n'a été déposée.</summary>
+    public string? ImageStoragePath { get; set; }
+
+    public string? ImageUrl { get; set; }
+
     public required string CreatedByUserId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

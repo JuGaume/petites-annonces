@@ -182,4 +182,9 @@ body {
   .features {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  /* Section « fonctionnalités » (Phase 9) : 4 cartes, mieux en 2x2 qu'en 3+1. */
+  .features-quad {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

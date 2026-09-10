@@ -171,6 +171,32 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   dépendance vulnérable à ce jour ; passer un outil comme Lighthouse sur `landing/` avant
   mise en production pour valider perf/SEO.
 
+## Favoris, personnalisation et recherche
+
+Fonctionnalités ajoutées après le plan d'implémentation initial (qui s'arrêtait à la
+Phase 8), à la demande directe de l'utilisateur.
+
+- **Favoris** : bouton cœur sur une annonce (flux du groupe et page de détail,
+  `PUT`/`DELETE /groups/{groupId}/listings/{listingId}/favorite`, idempotent). La page
+  « Mes favoris » (`/favorites`, `GET /favorites`) les liste tous groupes confondus,
+  en ne remontant que ceux dont on est encore membre du groupe au moment de la lecture.
+- **Recherche** : paramètre `search` sur `GET /groups/{groupId}/listings`, filtrant sur
+  le titre et la description (insensible à la casse). Champ de recherche sur le flux
+  d'annonces, avec un léger anti-rebond (400 ms) pour ne pas relancer une requête à
+  chaque caractère tapé.
+- **Image de groupe** : upload/suppression réservés aux admins du groupe
+  (`POST`/`DELETE /groups/{groupId}/image`, même pipeline de recompression que les
+  photos d'annonces). Affichée sur la liste des groupes et la page de détail du groupe.
+- **Aperçu d'annonces sur la liste des groupes** : jusqu'à 4 miniatures des annonces
+  disponibles les plus récentes de chaque groupe, à côté de son image.
+- **Mon compte** (`/account`, nouveau `AccountController`) : photo de profil
+  (upload/suppression), nom affiché, téléphone, changement d'adresse email (nécessite le
+  mot de passe actuel, met aussi à jour l'identifiant de connexion) et changement de mot
+  de passe — ces deux dernières routes partagent le même limiteur de débit que
+  `AuthController` (spec §8, anti brute-force).
+- **Landing retravaillée** (`landing/`) : nouvelle section présentant ces
+  fonctionnalités (recherche, favoris, groupes personnalisés, profil).
+
 ## Migrations EF Core
 
 ```bash

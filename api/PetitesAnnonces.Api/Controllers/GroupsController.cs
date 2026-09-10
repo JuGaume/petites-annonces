@@ -7,7 +7,9 @@ using PetitesAnnonces.Api.Auth;
 using PetitesAnnonces.Api.Contracts;
 using PetitesAnnonces.Api.Data;
 using PetitesAnnonces.Api.Email;
+using PetitesAnnonces.Api.Images;
 using PetitesAnnonces.Api.Models;
+using PetitesAnnonces.Api.Storage;
 
 namespace PetitesAnnonces.Api.Controllers;
 
@@ -17,10 +19,14 @@ namespace PetitesAnnonces.Api.Controllers;
 public class GroupsController(
     ApplicationDbContext db,
     IEmailSender emailSender,
-    IConfiguration configuration) : ControllerBase
+    IConfiguration configuration,
+    IBlobStorageService blobStorage) : ControllerBase
 {
     private const int MaxNameLength = 120;
     private const int MaxDescriptionLength = 500;
+    private const int MaxPreviewsPerGroup = 4;
+    private const long MaxImageBytes = 5 * 1024 * 1024;
+    private static readonly string[] AllowedImageContentTypes = ["image/jpeg", "image/png", "image/webp"];
 
     private string CurrentUserId => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
@@ -60,7 +66,7 @@ public class GroupsController(
 
         await db.SaveChangesAsync();
 
-        return new GroupResponse(group.Id, group.Name, group.Description, group.CreatedByUserId, group.CreatedAt, MemberCount: 1, GroupMemberRole.Admin.ToString(), EmailDigestEnabled: true);
+        return new GroupResponse(group.Id, group.Name, group.Description, group.ImageUrl, group.CreatedByUserId, group.CreatedAt, MemberCount: 1, GroupMemberRole.Admin.ToString(), EmailDigestEnabled: true, ListingPreviewUrls: []);
     }
 
     [HttpGet]
@@ -68,21 +74,104 @@ public class GroupsController(
     {
         var userId = CurrentUserId;
 
-        var groups = await db.GroupMemberships
+        var memberships = await db.GroupMemberships
             .AsNoTracking()
             .Where(m => m.UserId == userId)
-            .Select(m => new GroupResponse(
+            .Select(m => new
+            {
                 m.Group!.Id,
                 m.Group.Name,
                 m.Group.Description,
+                m.Group.ImageUrl,
                 m.Group.CreatedByUserId,
                 m.Group.CreatedAt,
-                m.Group.Memberships.Count,
-                m.Role.ToString(),
-                m.EmailDigestEnabled))
+                MemberCount = m.Group.Memberships.Count,
+                m.Role,
+                m.EmailDigestEnabled,
+            })
             .ToListAsync();
 
-        return groups;
+        var previewsByGroup = await GetListingPreviewsByGroupAsync(memberships.Select(m => m.Id).ToList());
+
+        return memberships
+            .Select(m => new GroupResponse(
+                m.Id,
+                m.Name,
+                m.Description,
+                m.ImageUrl,
+                m.CreatedByUserId,
+                m.CreatedAt,
+                m.MemberCount,
+                m.Role.ToString(),
+                m.EmailDigestEnabled,
+                previewsByGroup.TryGetValue(m.Id, out var urls) ? urls : []))
+            .ToList();
+    }
+
+    [HttpPost("{groupId:int}/image")]
+    [Authorize(Policy = GroupPolicies.Admin)]
+    [RequestSizeLimit(MaxImageBytes + 1024 * 1024)]
+    public async Task<ActionResult<GroupResponse>> UploadImage(int groupId, IFormFile image)
+    {
+        if (image is null || image.Length == 0)
+        {
+            return ValidationProblem("Aucune image reçue.");
+        }
+
+        if (!AllowedImageContentTypes.Contains(image.ContentType, StringComparer.OrdinalIgnoreCase))
+        {
+            return ValidationProblem("Type de fichier non autorisé (jpeg, png ou webp uniquement).");
+        }
+
+        if (image.Length > MaxImageBytes)
+        {
+            return ValidationProblem("L'image doit faire moins de 5 Mo.");
+        }
+
+        var group = await db.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+        if (group is null)
+        {
+            return NotFound();
+        }
+
+        var previousStoragePath = group.ImageStoragePath;
+
+        await using var stream = image.OpenReadStream();
+        using var resized = await ThumbnailGenerator.CreateOptimizedOriginalAsync(stream);
+        var stored = await blobStorage.SaveAsync(resized, image.FileName, ThumbnailGenerator.OptimizedContentType);
+
+        group.ImageStoragePath = stored.StoragePath;
+        group.ImageUrl = stored.Url;
+        await db.SaveChangesAsync();
+
+        if (previousStoragePath is not null)
+        {
+            await blobStorage.DeleteAsync(previousStoragePath);
+        }
+
+        var response = await GetGroupResponseAsync(groupId, CurrentUserId);
+        return response is null ? NotFound() : response;
+    }
+
+    [HttpDelete("{groupId:int}/image")]
+    [Authorize(Policy = GroupPolicies.Admin)]
+    public async Task<IActionResult> DeleteImage(int groupId)
+    {
+        var group = await db.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+        if (group is null)
+        {
+            return NotFound();
+        }
+
+        if (group.ImageStoragePath is not null)
+        {
+            await blobStorage.DeleteAsync(group.ImageStoragePath);
+            group.ImageStoragePath = null;
+            group.ImageUrl = null;
+            await db.SaveChangesAsync();
+        }
+
+        return NoContent();
     }
 
     [HttpGet("{groupId:int}")]
@@ -222,19 +311,75 @@ public class GroupsController(
 
     private async Task<GroupResponse?> GetGroupResponseAsync(int groupId, string userId)
     {
-        return await db.GroupMemberships
+        var membership = await db.GroupMemberships
             .AsNoTracking()
             .Where(m => m.GroupId == groupId && m.UserId == userId)
-            .Select(m => new GroupResponse(
+            .Select(m => new
+            {
                 m.Group!.Id,
                 m.Group.Name,
                 m.Group.Description,
+                m.Group.ImageUrl,
                 m.Group.CreatedByUserId,
                 m.Group.CreatedAt,
-                m.Group.Memberships.Count,
-                m.Role.ToString(),
-                m.EmailDigestEnabled))
+                MemberCount = m.Group.Memberships.Count,
+                m.Role,
+                m.EmailDigestEnabled,
+            })
             .FirstOrDefaultAsync();
+
+        if (membership is null)
+        {
+            return null;
+        }
+
+        var previewsByGroup = await GetListingPreviewsByGroupAsync([membership.Id]);
+
+        return new GroupResponse(
+            membership.Id,
+            membership.Name,
+            membership.Description,
+            membership.ImageUrl,
+            membership.CreatedByUserId,
+            membership.CreatedAt,
+            membership.MemberCount,
+            membership.Role.ToString(),
+            membership.EmailDigestEnabled,
+            previewsByGroup.TryGetValue(membership.Id, out var urls) ? urls : []);
+    }
+
+    /// <summary>
+    /// Miniatures des annonces disponibles les plus récentes, par groupe (spec Phase 9,
+    /// aperçu sur la liste des groupes) — une requête unique pour tous les groupes demandés
+    /// plutôt qu'une par groupe.
+    /// </summary>
+    private async Task<Dictionary<int, List<string>>> GetListingPreviewsByGroupAsync(IReadOnlyCollection<int> groupIds)
+    {
+        if (groupIds.Count == 0)
+        {
+            return [];
+        }
+
+        // Trié avant la projection, comme partout ailleurs dans ce contrôleur (voir
+        // Members()) : un OrderBy après coup ne se traduit pas en SQL sur SQL Server.
+        var previews = await db.Listings
+            .AsNoTracking()
+            .Where(l => groupIds.Contains(l.GroupId) && l.Status == ListingStatus.Available)
+            .OrderByDescending(l => l.CreatedAt)
+            .Select(l => new
+            {
+                l.GroupId,
+                ThumbnailUrl = l.Images.OrderBy(i => i.Position).Select(i => i.ThumbnailUrl).FirstOrDefault(),
+            })
+            .ToListAsync();
+
+        // Regroupement et troncature en mémoire : LINQ to Objects est stable, l'ordre
+        // décroissant par date posé ci-dessus est donc conservé au sein de chaque groupe.
+        return previews
+            .GroupBy(p => p.GroupId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(p => p.ThumbnailUrl).Where(url => url is not null).Take(MaxPreviewsPerGroup).Select(url => url!).ToList());
     }
 
     private static InvitationResponse ToInvitationResponse(GroupInvitation invitation) => new(

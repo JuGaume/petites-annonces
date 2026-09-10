@@ -2,10 +2,12 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { AdminRoute } from './components/AdminRoute'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AccountPage } from './pages/AccountPage'
 import { AdminPage } from './pages/AdminPage'
 import { ConversationsListPage } from './pages/ConversationsListPage'
 import { ConversationThreadPage } from './pages/ConversationThreadPage'
 import { CreateListingPage } from './pages/CreateListingPage'
+import { FavoritesPage } from './pages/FavoritesPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
 import { HomePage } from './pages/HomePage'
 import { JoinGroupPage } from './pages/JoinGroupPage'
@@ -61,6 +63,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <ListingDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <FavoritesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <AccountPage />
               </ProtectedRoute>
             }
           />

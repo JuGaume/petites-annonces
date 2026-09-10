@@ -56,8 +56,20 @@ export function HomePage() {
               Admin
             </Link>
           )}
+          <Link to="/favorites" className="text-sm font-medium text-[var(--color-accent)]">
+            Favoris
+          </Link>
           <Link to="/conversations" className="text-sm font-medium text-[var(--color-accent)]">
             Messages
+          </Link>
+          <Link to="/account" className="flex items-center" aria-label="Mon compte">
+            {user?.photoUrl ? (
+              <img src={user.photoUrl} alt="" className="h-7 w-7 rounded-full object-cover" />
+            ) : (
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-bg)] text-xs font-medium text-[var(--color-text-muted)]">
+                {user?.displayName.charAt(0).toUpperCase()}
+              </span>
+            )}
           </Link>
           <button onClick={() => logout()} className="text-sm text-[var(--color-text-muted)]">
             Se déconnecter
@@ -82,12 +94,33 @@ export function HomePage() {
             <li key={group.id}>
               <Link
                 to={`/groups/${group.id}`}
-                className="block rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+                className="flex items-center gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
               >
-                <span className="font-medium">{group.name}</span>
-                <span className="block text-sm text-[var(--color-text-muted)]">
-                  {group.memberCount} membre{group.memberCount > 1 ? 's' : ''}
-                </span>
+                <div className="h-12 w-12 flex-none overflow-hidden rounded bg-[var(--color-bg)]">
+                  {group.imageUrl && (
+                    <img src={group.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{group.name}</span>
+                  <span className="block text-sm text-[var(--color-text-muted)]">
+                    {group.memberCount} membre{group.memberCount > 1 ? 's' : ''}
+                  </span>
+                </div>
+                {group.listingPreviewUrls.length > 0 && (
+                  <div className="flex flex-none -space-x-2">
+                    {group.listingPreviewUrls.map((url, index) => (
+                      <img
+                        key={url}
+                        src={url}
+                        alt=""
+                        loading="lazy"
+                        style={{ zIndex: group.listingPreviewUrls.length - index }}
+                        className="h-8 w-8 flex-none rounded-full border-2 border-[var(--color-surface)] object-cover"
+                      />
+                    ))}
+                  </div>
+                )}
               </Link>
             </li>
           ))}

@@ -196,7 +196,7 @@ public class AuthController(
         }
 
         var roles = await userManager.GetRolesAsync(user);
-        return new UserResponse(user.Id, user.Email!, user.DisplayName, [.. roles]);
+        return new UserResponse(user.Id, user.Email!, user.DisplayName, [.. roles], user.PhotoUrl);
     }
 
     private async Task<AuthResponse> IssueTokensAsync(ApplicationUser user)
@@ -222,6 +222,6 @@ public class AuthController(
             Expires = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenDays),
         });
 
-        return new AuthResponse(accessToken, new UserResponse(user.Id, user.Email!, user.DisplayName, [.. roles]));
+        return new AuthResponse(accessToken, new UserResponse(user.Id, user.Email!, user.DisplayName, [.. roles], user.PhotoUrl));
     }
 }

@@ -8,6 +8,8 @@ interface AuthContextValue {
   register: (email: string, password: string, displayName: string) => Promise<void>
   loginWithGoogle: (idToken: string) => Promise<void>
   logout: () => Promise<void>
+  /** Recharge l'utilisateur courant (ex. après modification du profil sur /account). */
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -75,8 +77,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    try {
+      setUser(await apiJson<UserResponse>('/auth/me'))
+    } catch {
+      // Garde l'utilisateur affiché tel quel si le rechargement échoue (coupure
+      // réseau passagère) plutôt que de vider la session en cours.
+    }
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -8,4 +8,4 @@ public record GoogleLoginRequest(string IdToken);
 
 public record AuthResponse(string AccessToken, UserResponse User);
 
-public record UserResponse(string Id, string Email, string DisplayName, IReadOnlyList<string> Roles);
+public record UserResponse(string Id, string Email, string DisplayName, IReadOnlyList<string> Roles, string? PhotoUrl);

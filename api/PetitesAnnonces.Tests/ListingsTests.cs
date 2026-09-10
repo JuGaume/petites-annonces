@@ -241,6 +241,50 @@ public class ListingsTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
+    public async Task List_Search_Matches_Title_Or_Description_Case_Insensitively()
+    {
+        var (client, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(client);
+        var categoryId = await GetFirstCategoryIdAsync(client);
+
+        await client.PostAsync($"/groups/{group.Id}/listings", BuildListingForm(categoryId, title: "Vélo enfant", description: "Bon état"));
+        await client.PostAsync($"/groups/{group.Id}/listings", BuildListingForm(categoryId, title: "Table basse", description: "En chêne massif"));
+
+        var byTitle = await client.GetFromJsonAsync<PagedResult<ListingSummaryResponse>>(
+            $"/groups/{group.Id}/listings?search=VÉLO");
+        var byDescription = await client.GetFromJsonAsync<PagedResult<ListingSummaryResponse>>(
+            $"/groups/{group.Id}/listings?search=ch%C3%AAne");
+        var noMatch = await client.GetFromJsonAsync<PagedResult<ListingSummaryResponse>>(
+            $"/groups/{group.Id}/listings?search=canapé");
+
+        Assert.Single(byTitle!.Items);
+        Assert.Equal("Vélo enfant", byTitle.Items[0].Title);
+        Assert.Single(byDescription!.Items);
+        Assert.Equal("Table basse", byDescription.Items[0].Title);
+        Assert.Empty(noMatch!.Items);
+    }
+
+    [Fact]
+    public async Task Detail_And_Summary_Reflect_Whether_The_Current_User_Favorited_The_Listing()
+    {
+        var (client, _) = await RegisterAndAuthenticateAsync();
+        var group = await CreateGroupAsync(client);
+        var categoryId = await GetFirstCategoryIdAsync(client);
+
+        var listing = (await (await client.PostAsync($"/groups/{group.Id}/listings", BuildListingForm(categoryId)))
+            .Content.ReadFromJsonAsync<ListingDetailResponse>())!;
+        Assert.False(listing.IsFavorite);
+
+        await client.PutAsync($"/groups/{group.Id}/listings/{listing.Id}/favorite", content: null);
+
+        var detail = await client.GetFromJsonAsync<ListingDetailResponse>($"/groups/{group.Id}/listings/{listing.Id}");
+        var summary = await client.GetFromJsonAsync<PagedResult<ListingSummaryResponse>>($"/groups/{group.Id}/listings");
+
+        Assert.True(detail!.IsFavorite);
+        Assert.True(summary!.Items.Single(i => i.Id == listing.Id).IsFavorite);
+    }
+
+    [Fact]
     public async Task Author_Can_Update_Listing_Status_But_Other_Members_Cannot()
     {
         var (owner, _) = await RegisterAndAuthenticateAsync();

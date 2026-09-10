@@ -6,11 +6,15 @@ public record GroupResponse(
     int Id,
     string Name,
     string? Description,
+    string? ImageUrl,
     string CreatedByUserId,
     DateTimeOffset CreatedAt,
     int MemberCount,
     string CurrentUserRole,
-    bool EmailDigestEnabled);
+    bool EmailDigestEnabled,
+    // Miniatures des annonces disponibles les plus récentes du groupe (spec Phase 9),
+    // pour un aperçu sur la liste des groupes.
+    IReadOnlyList<string> ListingPreviewUrls);
 
 public record UpdateGroupNotificationPreferenceRequest(bool EmailDigestEnabled);
 

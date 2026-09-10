@@ -39,7 +39,8 @@ public record ListingSummaryResponse(
     string Status,
     string CategoryName,
     string? ThumbnailUrl,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool IsFavorite);
 
 public record ListingDetailResponse(
     int Id,
@@ -55,7 +56,8 @@ public record ListingDetailResponse(
     string ContactMode,
     string? ContactDetails,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<ListingImageResponse> Images);
+    IReadOnlyList<ListingImageResponse> Images,
+    bool IsFavorite);
 
 public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount);
 

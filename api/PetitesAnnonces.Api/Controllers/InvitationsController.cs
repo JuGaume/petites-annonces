@@ -93,14 +93,18 @@ public class InvitationsController(ApplicationDbContext db, UserManager<Applicat
             .Select(m => new { m.Role, m.EmailDigestEnabled })
             .FirstAsync();
 
+        // Aperçu d'annonces (ListingPreviewUrls) omis ici pour rester simple : la liste
+        // complète des groupes (GroupsController.Mine) le renverra au prochain chargement.
         return new GroupResponse(
             invitation.Group.Id,
             invitation.Group.Name,
             invitation.Group.Description,
+            invitation.Group.ImageUrl,
             invitation.Group.CreatedByUserId,
             invitation.Group.CreatedAt,
             memberCount,
             membership.Role.ToString(),
-            membership.EmailDigestEnabled);
+            membership.EmailDigestEnabled,
+            ListingPreviewUrls: []);
     }
 }

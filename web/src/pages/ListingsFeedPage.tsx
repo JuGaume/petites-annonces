@@ -8,6 +8,10 @@ import {
   type PagedResult,
 } from '../lib/apiClient'
 
+// Attend une pause dans la frappe avant de relancer la recherche, pour ne pas
+// déclencher une requête à chaque caractère tapé.
+const SEARCH_DEBOUNCE_MS = 400
+
 const PAGE_SIZE = 20
 
 const STATUS_LABELS: Record<ListingStatus, string> = {
@@ -27,6 +31,8 @@ export function ListingsFeedPage() {
   const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [categoryId, setCategoryId] = useState('')
   const [status, setStatus] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
 
   const [items, setItems] = useState<ListingSummaryResponse[]>([])
   const [page, setPage] = useState(1)
@@ -41,6 +47,11 @@ export function ListingsFeedPage() {
     apiJson<CategoryResponse[]>('/categories').then(setCategories).catch(() => undefined)
   }, [])
 
+  useEffect(() => {
+    const handle = setTimeout(() => setSearch(searchInput.trim()), SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(handle)
+  }, [searchInput])
+
   const loadPage = useCallback(
     async (pageToLoad: number, replace: boolean) => {
       if (!groupId) {
@@ -53,6 +64,7 @@ export function ListingsFeedPage() {
         const params = new URLSearchParams({ page: String(pageToLoad), pageSize: String(PAGE_SIZE) })
         if (categoryId) params.set('categoryId', categoryId)
         if (status) params.set('status', status)
+        if (search) params.set('search', search)
 
         const result = await apiJson<PagedResult<ListingSummaryResponse>>(
           `/groups/${groupId}/listings?${params.toString()}`,
@@ -66,7 +78,7 @@ export function ListingsFeedPage() {
         setIsLoading(false)
       }
     },
-    [groupId, categoryId, status],
+    [groupId, categoryId, status, search],
   )
 
   // Filtres changés : on repart de la première page.
@@ -74,7 +86,22 @@ export function ListingsFeedPage() {
     setItems([])
     loadPage(1, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId, categoryId, status])
+  }, [groupId, categoryId, status, search])
+
+  async function toggleFavorite(listing: ListingSummaryResponse) {
+    const nextIsFavorite = !listing.isFavorite
+    // Optimiste : on met à jour l'affichage avant la réponse du serveur, pour un
+    // retour immédiat au tap sur le cœur.
+    setItems((current) => current.map((i) => (i.id === listing.id ? { ...i, isFavorite: nextIsFavorite } : i)))
+    try {
+      await apiJson(`/groups/${groupId}/listings/${listing.id}/favorite`, {
+        method: nextIsFavorite ? 'PUT' : 'DELETE',
+      })
+    } catch {
+      // Échec : on revient à l'état précédent.
+      setItems((current) => current.map((i) => (i.id === listing.id ? { ...i, isFavorite: listing.isFavorite } : i)))
+    }
+  }
 
   // Scroll infini : on charge la page suivante quand la sentinelle devient visible.
   useEffect(() => {
@@ -110,6 +137,14 @@ export function ListingsFeedPage() {
           + Déposer
         </Link>
       </div>
+
+      <input
+        type="search"
+        placeholder="Rechercher une annonce..."
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
+      />
 
       <div className="flex gap-2">
         <select
@@ -149,7 +184,7 @@ export function ListingsFeedPage() {
           <li key={listing.id}>
             <Link
               to={`/groups/${groupId}/listings/${listing.id}`}
-              className="flex flex-col overflow-hidden rounded border border-[var(--color-border)] bg-[var(--color-surface)]"
+              className="relative flex flex-col overflow-hidden rounded border border-[var(--color-border)] bg-[var(--color-surface)]"
             >
               <div className="aspect-square bg-[var(--color-bg)]">
                 {listing.thumbnailUrl && (
@@ -161,6 +196,17 @@ export function ListingsFeedPage() {
                   />
                 )}
               </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  toggleFavorite(listing)
+                }}
+                aria-label={listing.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-base leading-none text-white"
+              >
+                {listing.isFavorite ? '♥' : '♡'}
+              </button>
               <div className="flex flex-col gap-0.5 p-2">
                 <span className="truncate text-sm font-medium">{listing.title}</span>
                 <span className="text-xs text-[var(--color-text-muted)]">

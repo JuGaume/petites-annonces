@@ -27,6 +27,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
 
+    public DbSet<Favorite> Favorites => Set<Favorite>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -44,6 +46,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.Property(g => g.Name).HasMaxLength(120).IsRequired();
             entity.Property(g => g.Description).HasMaxLength(500);
+            entity.Property(g => g.ImageStoragePath).HasMaxLength(300);
+            entity.Property(g => g.ImageUrl).HasMaxLength(1000);
+        });
+
+        builder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(u => u.PhotoStoragePath).HasMaxLength(300);
+            entity.Property(u => u.PhotoUrl).HasMaxLength(1000);
         });
 
         builder.Entity<GroupMembership>(entity =>
@@ -135,6 +145,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(e => e.TargetId).HasMaxLength(100);
             entity.Property(e => e.Details).HasMaxLength(300);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        builder.Entity<Favorite>(entity =>
+        {
+            // Un utilisateur ne peut favoriser deux fois la même annonce (idempotence
+            // de FavoritesController.Add).
+            entity.HasIndex(f => new { f.UserId, f.ListingId }).IsUnique();
+            entity.HasOne(f => f.Listing)
+                .WithMany()
+                .HasForeignKey(f => f.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
