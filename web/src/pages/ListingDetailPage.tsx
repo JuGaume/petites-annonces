@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { apiJson, ApiError, type ListingDetailResponse, type ListingStatus } from '../lib/apiClient'
+import {
+  apiJson,
+  ApiError,
+  type ConversationResponse,
+  type ListingDetailResponse,
+  type ListingStatus,
+} from '../lib/apiClient'
 
 const STATUS_LABELS: Record<ListingStatus, string> = {
   Available: 'Disponible',
@@ -24,6 +30,7 @@ export function ListingDetailPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [isBusy, setIsBusy] = useState(false)
+  const [isContacting, setIsContacting] = useState(false)
 
   useEffect(() => {
     apiJson<ListingDetailResponse>(`/groups/${groupId}/listings/${listingId}`)
@@ -46,6 +53,21 @@ export function ListingDetailPage() {
       setActionError(err instanceof ApiError ? err.message : 'Impossible de mettre à jour le statut.')
     } finally {
       setIsBusy(false)
+    }
+  }
+
+  async function contactSeller() {
+    setIsContacting(true)
+    setActionError(null)
+    try {
+      const conversation = await apiJson<ConversationResponse>(
+        `/groups/${groupId}/listings/${listingId}/conversations`,
+        { method: 'POST' },
+      )
+      navigate(`/conversations/${conversation.id}`)
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Impossible de contacter le vendeur.')
+      setIsContacting(false)
     }
   }
 
@@ -122,10 +144,22 @@ export function ListingDetailPage() {
         <h2 className="mb-1 font-semibold">Contact</h2>
         {listing.contactMode === 'DirectContact' ? (
           <p className="text-sm">{listing.contactDetails}</p>
-        ) : (
+        ) : isAuthor ? (
           <p className="text-sm text-[var(--color-text-muted)]">
-            Messagerie interne — bientôt disponible.
+            Les messages des personnes intéressées apparaissent dans{' '}
+            <Link to="/conversations" className="font-medium text-[var(--color-accent)]">
+              vos conversations
+            </Link>
+            .
           </p>
+        ) : (
+          <button
+            onClick={contactSeller}
+            disabled={isContacting}
+            className="rounded bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+          >
+            {isContacting ? 'Ouverture...' : 'Contacter le vendeur'}
+          </button>
         )}
       </section>
 

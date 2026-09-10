@@ -88,6 +88,18 @@ Par défaut le front attend l'API sur `http://localhost:5083` (voir
   générée à l'upload (SixLabors.ImageSharp). Pour un vrai stockage Azure, renseigner
   `BlobStorage:AzureConnectionString` (et éventuellement `BlobStorage:ContainerName`).
 
+## Messagerie interne
+
+- Disponible quand une annonce a choisi le mode de contact « messagerie interne » (par
+  opposition aux coordonnées affichées directement).
+- Une personne intéressée ouvre une conversation depuis l'annonce (un seul fil par
+  couple annonce/acheteur) ; l'historique se charge via l'API REST (`GET
+  /conversations/{id}/messages`) et les nouveaux messages arrivent en temps réel via
+  SignalR (`/hubs/conversations`) tant que la fenêtre est ouverte.
+- Le token JWT est transmis en paramètre de requête pour la connexion SignalR (un
+  WebSocket ne permet pas de poser l'en-tête `Authorization`) — géré automatiquement par
+  le client (`web/src/lib/conversationsHub.ts`), rien à configurer.
+
 ## Migrations EF Core
 
 ```bash

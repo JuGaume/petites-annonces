@@ -96,6 +96,30 @@ export interface PagedResult<T> {
   totalCount: number
 }
 
+export interface ConversationResponse {
+  id: number
+  listingId: number
+  listingTitle: string
+  listingThumbnailUrl: string | null
+  buyerUserId: string
+  buyerDisplayName: string
+  sellerUserId: string
+  sellerDisplayName: string
+  createdAt: string
+  lastMessageContent: string | null
+  lastMessageAuthorUserId: string | null
+  lastMessageAt: string | null
+}
+
+export interface MessageResponse {
+  id: number
+  conversationId: number
+  authorUserId: string
+  authorDisplayName: string
+  content: string
+  createdAt: string
+}
+
 export class ApiError extends Error {
   status: number
 
@@ -109,6 +133,12 @@ let accessToken: string | null = null
 
 export function setAccessToken(token: string | null) {
   accessToken = token
+}
+
+/** Utilisé par le client SignalR (ConversationsHub) : le token doit être passé en
+ * paramètre de requête pour le handshake WebSocket, qui ne peut pas poser d'en-tête. */
+export function getAccessToken(): string | null {
+  return accessToken
 }
 
 /**

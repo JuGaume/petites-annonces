@@ -50,9 +50,14 @@ export function HomePage() {
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Mes groupes</h1>
-        <button onClick={() => logout()} className="text-sm text-[var(--color-text-muted)]">
-          Se déconnecter
-        </button>
+        <div className="flex items-center gap-3">
+          <Link to="/conversations" className="text-sm font-medium text-[var(--color-accent)]">
+            Messages
+          </Link>
+          <button onClick={() => logout()} className="text-sm text-[var(--color-text-muted)]">
+            Se déconnecter
+          </button>
+        </div>
       </div>
 
       <p className="text-sm text-[var(--color-text-muted)]">Bienvenue, {user?.displayName} 👋</p>

@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { ConversationsListPage } from './pages/ConversationsListPage'
+import { ConversationThreadPage } from './pages/ConversationThreadPage'
 import { CreateListingPage } from './pages/CreateListingPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
 import { HomePage } from './pages/HomePage'
@@ -57,6 +59,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <ListingDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/conversations"
+            element={
+              <ProtectedRoute>
+                <ConversationsListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/conversations/:conversationId"
+            element={
+              <ProtectedRoute>
+                <ConversationThreadPage />
               </ProtectedRoute>
             }
           />

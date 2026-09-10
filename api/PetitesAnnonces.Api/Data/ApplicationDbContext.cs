@@ -21,6 +21,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ListingImage> ListingImages => Set<ListingImage>();
 
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+
+    public DbSet<Message> Messages => Set<Message>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -95,6 +99,27 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(i => i.Listing)
                 .WithMany(l => l.Images)
                 .HasForeignKey(i => i.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Conversation>(entity =>
+        {
+            // Un acheteur n'a qu'une seule conversation par annonce (voir
+            // ListingConversationsController, qui la récupère ou la crée).
+            entity.HasIndex(c => new { c.ListingId, c.BuyerUserId }).IsUnique();
+            entity.HasOne(c => c.Listing)
+                .WithMany()
+                .HasForeignKey(c => c.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Message>(entity =>
+        {
+            entity.Property(m => m.Content).HasMaxLength(2000).IsRequired();
+            entity.HasIndex(m => m.ConversationId);
+            entity.HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

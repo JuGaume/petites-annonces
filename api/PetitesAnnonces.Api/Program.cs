@@ -12,6 +12,7 @@ using PetitesAnnonces.Api.Auth;
 using PetitesAnnonces.Api.Contracts;
 using PetitesAnnonces.Api.Data;
 using PetitesAnnonces.Api.Email;
+using PetitesAnnonces.Api.Hubs;
 using PetitesAnnonces.Api.Models;
 using PetitesAnnonces.Api.Storage;
 using PetitesAnnonces.Api.Validation;
@@ -80,6 +81,23 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtSection["SigningKey"]!)),
             ClockSkew = TimeSpan.FromSeconds(30),
         };
+
+        // Le client JS ne peut pas poser d'en-tête Authorization sur la requête de
+        // handshake WebSocket : SignalR transmet le token via un paramètre de requête à
+        // la place, uniquement sur les routes du hub.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            },
+        };
     });
 
 builder.Services.AddHttpContextAccessor();
@@ -132,6 +150,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -184,6 +203,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ConversationsHub>("/hubs/conversations");
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
