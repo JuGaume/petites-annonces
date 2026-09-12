@@ -81,8 +81,29 @@ export function JoinGroupPage() {
   const redirect = `/join/${token}`
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-4 px-4 text-center">
-      <h1 className="text-2xl font-semibold">Rejoindre le groupe « {preview?.groupName} »</h1>
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-6 bg-[var(--color-bg)] px-7 text-center text-[var(--color-text)]">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FEF3C7]">
+        <svg
+          width="30"
+          height="30"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--color-accent)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <p className="text-sm text-[var(--color-text-muted)]">Vous êtes invité·e à rejoindre</p>
+        <h1 className="text-[22px] font-bold">{preview?.groupName}</h1>
+      </div>
 
       {joinError && <p className="text-sm text-red-600">{joinError}</p>}
 
@@ -90,26 +111,30 @@ export function JoinGroupPage() {
         <button
           onClick={join}
           disabled={isJoining}
-          className="rounded bg-[var(--color-accent)] px-4 py-2 font-medium text-white disabled:opacity-60"
+          className="w-full rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-4 py-3 font-bold text-[var(--color-accent)] disabled:opacity-60"
         >
           {isJoining ? 'Adhésion...' : 'Rejoindre le groupe'}
         </button>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex w-full flex-col gap-2.5">
           <Link
             to={`/register?redirect=${encodeURIComponent(redirect)}`}
-            className="rounded bg-[var(--color-accent)] px-4 py-2 font-medium text-white"
+            className="w-full rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-4 py-3 font-bold text-[var(--color-accent)]"
           >
-            Créer un compte pour rejoindre
+            Créer un compte et rejoindre
           </Link>
           <Link
             to={`/login?redirect=${encodeURIComponent(redirect)}`}
-            className="text-sm font-medium text-[var(--color-accent)]"
+            className="w-full rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-4 py-3 font-bold text-[var(--color-accent)]"
           >
             J'ai déjà un compte
           </Link>
         </div>
       )}
+
+      <p className="text-xs leading-relaxed text-[#9ca3af]">
+        Ce lien d'invitation est réservé aux personnes conviées par les membres du groupe.
+      </p>
     </main>
   )
 }

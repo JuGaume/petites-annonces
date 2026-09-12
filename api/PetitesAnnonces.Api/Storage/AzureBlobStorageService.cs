@@ -20,7 +20,7 @@ public class AzureBlobStorageService : IBlobStorageService
 
     public async Task<StoredBlob> SaveAsync(Stream content, string fileName, string contentType, CancellationToken cancellationToken = default)
     {
-        var storagePath = $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}";
+        var storagePath = $"{Guid.NewGuid():N}{BlobFileNaming.ExtensionFor(contentType, fileName)}";
         var blob = _container.GetBlobClient(storagePath);
 
         await blob.UploadAsync(

@@ -22,7 +22,7 @@ public class LocalDiskBlobStorageService(
         var rootPath = Path.Combine(environment.ContentRootPath, _options.LocalRootPath);
         Directory.CreateDirectory(rootPath);
 
-        var storagePath = $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}";
+        var storagePath = $"{Guid.NewGuid():N}{BlobFileNaming.ExtensionFor(contentType, fileName)}";
         var fullPath = Path.Combine(rootPath, storagePath);
 
         await using (var fileStream = File.Create(fullPath))

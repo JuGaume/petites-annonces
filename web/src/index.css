@@ -1,17 +1,26 @@
 @import "tailwindcss";
 
 /*
- * Petite charte visuelle — esprit "petites annonces" : sobre, fonctionnel,
- * accent chaleureux sur les actions principales. Ajustée au fil de la Phase 3.
+ * Charte visuelle — crème/marine avec accent or, boutons pilule. Remplace la première
+ * charte orange (Phase 3) à partir des maquettes du 2026-09-10.
+ *
+ * --color-accent reste la couleur "texte/lien/bouton plein + texte blanc" utilisée
+ * partout dans le code existant (ex. bg-[var(--color-accent)] text-white) : elle passe
+ * au marine, qui garde un excellent contraste avec du blanc — contrairement à l'or, trop
+ * clair pour du texte blanc. --color-gold est le nouvel accent chaleureux, réservé aux
+ * boutons principaux pilule (fond or + texte marine) et aux petites touches d'accent.
  */
 :root {
-  --color-accent: #ea580c;
-  --color-accent-hover: #c2410c;
-  --color-bg: #f9fafb;
+  --color-accent: #1c2b3a;
+  --color-accent-hover: #33495e;
+  --color-gold: #f5b700;
+  --color-gold-hover: #dba500;
+  --color-bg: #fffbf0;
   --color-surface: #ffffff;
-  --color-text: #1f2937;
+  --color-text: #1c2b3a;
   --color-text-muted: #6b7280;
   --color-border: #e5e7eb;
+  --radius-pill: 999px;
 
   color-scheme: light;
 }

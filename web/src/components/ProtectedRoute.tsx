@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { AppHeader } from './AppHeader'
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -13,5 +14,13 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
-  return <>{children}</>
+  // AppHeader posée ici une seule fois plutôt que dans chaque page protégée : la nav
+  // desktop persistante (voir AppHeader.tsx) couvre ainsi tous les écrans de l'appli
+  // sans dupliquer l'import/rendu 8 fois.
+  return (
+    <>
+      <AppHeader />
+      {children}
+    </>
+  )
 }

@@ -13,6 +13,47 @@ import {
 
 const MAX_IMAGES = 8
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-[13px] font-semibold text-[#374151]">{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T
+  options: Array<{ value: T; label: string }>
+  onChange: (value: T) => void
+}) {
+  return (
+    <div className="flex overflow-hidden rounded-[var(--radius-pill)] border border-[var(--color-border)]">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={
+            option.value === value
+              ? 'flex-1 bg-[var(--color-accent)] px-2 py-2 text-[13px] font-semibold text-white'
+              : 'flex-1 px-2 py-2 text-[13px] font-medium text-[var(--color-text-muted)]'
+          }
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+const inputClass =
+  'rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]'
+
 export function CreateListingPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const navigate = useNavigate()
@@ -90,103 +131,140 @@ export function CreateListingPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8">
-      <Link to={`/groups/${groupId}/listings`} className="text-sm text-[var(--color-text-muted)]">
-        ← Annonces du groupe
-      </Link>
-
-      <h1 className="text-2xl font-semibold">Déposer une annonce</h1>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
-          type="text"
-          placeholder="Titre"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-        />
-
-        <textarea
-          placeholder="Description (optionnel)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-        />
-
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-5 bg-[var(--color-bg)] px-4 py-6 text-[var(--color-text)] lg:max-w-3xl lg:px-8 lg:py-10">
+      <div className="flex items-center justify-between">
+        <Link
+          to={`/groups/${groupId}/listings`}
+          aria-label="Annuler"
+          className="flex h-8 w-8 items-center justify-center"
         >
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </Link>
+        <h1 className="text-[15px] font-semibold lg:text-xl">Nouvelle annonce</h1>
+        <div className="w-8" />
+      </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-[var(--color-text-muted)]">Type d'annonce</label>
-          <select
-            value={mode}
-            onChange={(e) => setMode(e.target.value as ListingMode)}
-            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-          >
-            <option value="Sale">Vente</option>
-            <option value="Donation">Don</option>
-            <option value="Trade">Troc</option>
-          </select>
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 lg:gap-6 lg:rounded-2xl lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:p-8"
+      >
+        {/* Desktop : deux colonnes (photos/titre/description à gauche, catégorie et
+            réglages à droite) plutôt qu'un long formulaire empilé sur toute la largeur. */}
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-x-8 lg:gap-y-5">
+          <div className="flex flex-col gap-4">
+            <Field label={`Photos (jusqu'à ${MAX_IMAGES})`}>
+              <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#d1d5db] bg-[var(--color-surface)] lg:h-32 lg:bg-[var(--color-bg)]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                <span className="text-[13px] text-[var(--color-text-muted)]">Ajouter des photos</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={handleImagesChange}
+                  className="hidden"
+                />
+              </label>
+              {previews.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {previews.map((url) => (
+                    <img key={url} src={url} alt="Aperçu" className="h-16 w-16 rounded-lg object-cover" />
+                  ))}
+                </div>
+              )}
+            </Field>
 
-        {mode === 'Sale' && (
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            placeholder="Prix (€)"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            required
-            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-          />
-        )}
+            <Field label="Titre">
+              <input
+                type="text"
+                placeholder="Ex : Vélo enfant 16 pouces"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                className={inputClass}
+              />
+            </Field>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-[var(--color-text-muted)]">Contact</label>
-          <select
-            value={contactMode}
-            onChange={(e) => setContactMode(e.target.value as ContactMode)}
-            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-          >
-            <option value="DirectContact">Afficher mes coordonnées</option>
-            <option value="InternalMessaging">Messagerie interne (bientôt)</option>
-          </select>
-        </div>
+            <Field label="Description">
+              <textarea
+                placeholder="État, dimensions, lieu de retrait..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className={`${inputClass} resize-none lg:flex-1`}
+              />
+            </Field>
+          </div>
 
-        {contactMode === 'DirectContact' && (
-          <input
-            type="text"
-            placeholder="Téléphone ou email de contact"
-            value={contactDetails}
-            onChange={(e) => setContactDetails(e.target.value)}
-            required
-            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-          />
-        )}
+          <div className="flex flex-col gap-4">
+            <Field label="Catégorie">
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                required
+                className={inputClass}
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-sm text-[var(--color-text-muted)]">Photos (jusqu'à {MAX_IMAGES})</label>
-          <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImagesChange} />
-          {previews.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {previews.map((url) => (
-                <img key={url} src={url} alt="Aperçu" className="h-16 w-16 rounded object-cover" />
-              ))}
-            </div>
-          )}
+            <Field label="Cette annonce est pour">
+              <Segmented
+                value={mode}
+                onChange={setMode}
+                options={[
+                  { value: 'Sale', label: 'Vente' },
+                  { value: 'Donation', label: 'Don' },
+                  { value: 'Trade', label: 'Troc' },
+                ]}
+              />
+            </Field>
+
+            {mode === 'Sale' && (
+              <Field label="Prix">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="25 €"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </Field>
+            )}
+
+            <Field label="Mode de contact">
+              <Segmented
+                value={contactMode}
+                onChange={setContactMode}
+                options={[
+                  { value: 'InternalMessaging', label: 'Messagerie interne' },
+                  { value: 'DirectContact', label: 'Coordonnées directes' },
+                ]}
+              />
+            </Field>
+
+            {contactMode === 'DirectContact' && (
+              <input
+                type="text"
+                placeholder="Téléphone ou email de contact"
+                value={contactDetails}
+                onChange={(e) => setContactDetails(e.target.value)}
+                required
+                className={inputClass}
+              />
+            )}
+          </div>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -194,7 +272,7 @@ export function CreateListingPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded bg-[var(--color-accent)] px-3 py-2 font-medium text-white disabled:opacity-60"
+          className="rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-3 py-3.5 text-[15px] font-bold text-[var(--color-accent)] disabled:opacity-60 lg:self-end lg:px-8"
         >
           {isSubmitting ? 'Publication...' : "Publier l'annonce"}
         </button>

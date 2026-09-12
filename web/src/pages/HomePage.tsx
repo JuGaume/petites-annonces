@@ -3,6 +3,45 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { apiJson, ApiError, type GroupResponse } from '../lib/apiClient'
 
+// Mêmes teintes pastel que la grille de catégories de la home publique — réutilisées ici
+// comme couleur de repli pour l'avatar d'un groupe sans image, par cohérence visuelle.
+const AVATAR_TINTS = [
+  { bg: '#FDE7D3', text: '#C2410C' },
+  { bg: '#DBEAFE', text: '#2563EB' },
+  { bg: '#FCE7F3', text: '#BE185C' },
+  { bg: '#DCFCE7', text: '#15803D' },
+  { bg: '#EDE9FE', text: '#6D28D9' },
+  { bg: '#CFFAFE', text: '#0E7490' },
+]
+
+function avatarTint(id: number | string) {
+  const key = String(id)
+  let sum = 0
+  for (let i = 0; i < key.length; i++) sum += key.charCodeAt(i)
+  return AVATAR_TINTS[sum % AVATAR_TINTS.length]
+}
+
+function NavIconLink({
+  to,
+  label,
+  children,
+}: {
+  to: string
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      to={to}
+      aria-label={label}
+      title={label}
+      className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-accent)] hover:bg-[var(--color-surface)]"
+    >
+      {children}
+    </Link>
+  )
+}
+
 export function HomePage() {
   const { user, logout } = useAuth()
   const [groups, setGroups] = useState<GroupResponse[] | null>(null)
@@ -46,38 +85,80 @@ export function HomePage() {
     }
   }
 
+  const createGroupForm = (
+    <form onSubmit={handleCreate} className="flex flex-col gap-3">
+      <h2 className="font-semibold">Créer un groupe</h2>
+      <input
+        type="text"
+        placeholder="Nom du groupe"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af] lg:bg-[var(--color-bg)]"
+      />
+      <input
+        type="text"
+        placeholder="Description (optionnel)"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af] lg:bg-[var(--color-bg)]"
+      />
+
+      <button
+        type="submit"
+        disabled={isCreating}
+        className="flex items-center justify-center gap-2 rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-3 py-2.5 font-bold text-[var(--color-accent)] disabled:opacity-60"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        {isCreating ? 'Création...' : 'Créer le groupe'}
+      </button>
+    </form>
+  )
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 bg-[var(--color-bg)] px-4 py-6 text-[var(--color-text)] lg:max-w-6xl lg:px-8 lg:py-10">
+      {/* Sur desktop, la nav (AppHeader) couvre déjà Admin/Favoris/Messages/Compte : on
+          masque cette rangée d'icônes redondante et on ne garde que le titre. */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Mes groupes</h1>
-        <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Mes groupes</h1>
+        <div className="flex items-center gap-0.5 lg:hidden">
           {user?.roles.includes('Admin') && (
-            <Link to="/admin" className="text-sm font-medium text-[var(--color-accent)]">
-              Admin
-            </Link>
+            <NavIconLink to="/admin" label="Administration">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </NavIconLink>
           )}
-          <Link to="/favorites" className="text-sm font-medium text-[var(--color-accent)]">
-            Favoris
-          </Link>
-          <Link to="/conversations" className="text-sm font-medium text-[var(--color-accent)]">
-            Messages
-          </Link>
-          <Link to="/account" className="flex items-center" aria-label="Mon compte">
+          <NavIconLink to="/favorites" label="Favoris">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </NavIconLink>
+          <NavIconLink to="/conversations" label="Messages">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+          </NavIconLink>
+          <Link to="/account" className="ml-1 flex items-center" aria-label="Mon compte">
             {user?.photoUrl ? (
-              <img src={user.photoUrl} alt="" className="h-7 w-7 rounded-full object-cover" />
+              <img src={user.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
             ) : (
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-bg)] text-xs font-medium text-[var(--color-text-muted)]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-accent)] text-xs font-bold text-white">
                 {user?.displayName.charAt(0).toUpperCase()}
               </span>
             )}
           </Link>
-          <button onClick={() => logout()} className="text-sm text-[var(--color-text-muted)]">
-            Se déconnecter
-          </button>
         </div>
       </div>
 
-      <p className="text-sm text-[var(--color-text-muted)]">Bienvenue, {user?.displayName} 👋</p>
+      <div className="flex items-center justify-between lg:hidden">
+        <p className="text-sm text-[var(--color-text-muted)]">Bienvenue, {user?.displayName} 👋</p>
+        <button onClick={() => logout()} className="text-sm text-[var(--color-text-muted)] underline decoration-dotted">
+          Se déconnecter
+        </button>
+      </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -88,71 +169,78 @@ export function HomePage() {
         </p>
       )}
 
-      {groups && groups.length > 0 && (
-        <ul className="flex flex-col gap-2">
-          {groups.map((group) => (
-            <li key={group.id}>
-              <Link
-                to={`/groups/${group.id}`}
-                className="flex items-center gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-              >
-                <div className="h-12 w-12 flex-none overflow-hidden rounded bg-[var(--color-bg)]">
-                  {group.imageUrl && (
-                    <img src={group.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{group.name}</span>
-                  <span className="block text-sm text-[var(--color-text-muted)]">
-                    {group.memberCount} membre{group.memberCount > 1 ? 's' : ''}
-                  </span>
-                </div>
-                {group.listingPreviewUrls.length > 0 && (
-                  <div className="flex flex-none -space-x-2">
-                    {group.listingPreviewUrls.map((url, index) => (
-                      <img
-                        key={url}
-                        src={url}
-                        alt=""
-                        loading="lazy"
-                        style={{ zIndex: group.listingPreviewUrls.length - index }}
-                        className="h-8 w-8 flex-none rounded-full border-2 border-[var(--color-surface)] object-cover"
-                      />
-                    ))}
-                  </div>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Desktop : liste de groupes en grille à gauche, formulaire de création dans une
+          carte latérale fixe à droite (plutôt qu'empilé en bas de la longue colonne
+          mobile) — usage réel de la largeur disponible. */}
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        {groups && groups.length > 0 && (
+          <ul className="flex flex-1 flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-3.5 xl:grid-cols-3">
+            {groups.map((group) => {
+              const tint = avatarTint(group.id)
+              return (
+                <li key={group.id}>
+                  <Link
+                    to={`/groups/${group.id}`}
+                    className="flex items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 lg:h-full lg:items-start lg:hover:border-[var(--color-accent)]"
+                  >
+                    <div
+                      className="flex h-11 w-11 flex-none items-center justify-center overflow-hidden rounded-xl text-base font-bold"
+                      style={{ background: tint.bg, color: tint.text }}
+                    >
+                      {group.imageUrl ? (
+                        <img src={group.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        group.name.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-semibold">{group.name}</span>
+                      <span className="block text-[13px] text-[var(--color-text-muted)]">
+                        {group.memberCount} membre{group.memberCount > 1 ? 's' : ''}
+                      </span>
+                      {group.listingPreviewUrls.length > 0 && (
+                        <div className="mt-2 hidden flex-none -space-x-2 lg:flex">
+                          {group.listingPreviewUrls.map((url, index) => (
+                            <img
+                              key={url}
+                              src={url}
+                              alt=""
+                              loading="lazy"
+                              style={{ zIndex: group.listingPreviewUrls.length - index }}
+                              className="h-7 w-7 flex-none rounded-full border-2 border-[var(--color-surface)] object-cover"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {group.listingPreviewUrls.length > 0 && (
+                      <div className="flex flex-none -space-x-2 lg:hidden">
+                        {group.listingPreviewUrls.map((url, index) => (
+                          <img
+                            key={url}
+                            src={url}
+                            alt=""
+                            loading="lazy"
+                            style={{ zIndex: group.listingPreviewUrls.length - index }}
+                            className="h-8 w-8 flex-none rounded-full border-2 border-[var(--color-surface)] object-cover"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lg:hidden">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        )}
 
-      <form onSubmit={handleCreate} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
-        <h2 className="font-semibold">Créer un groupe</h2>
-        <input
-          type="text"
-          placeholder="Nom du groupe"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        <input
-          type="text"
-          placeholder="Description (optionnel)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-        />
-
-        <button
-          type="submit"
-          disabled={isCreating}
-          className="rounded bg-[var(--color-accent)] px-3 py-2 font-medium text-white disabled:opacity-60"
-        >
-          {isCreating ? 'Création...' : 'Créer le groupe'}
-        </button>
-      </form>
+        <div className="border-t border-[var(--color-border)] pt-6 lg:w-80 lg:flex-none lg:rounded-2xl lg:border lg:bg-[var(--color-surface)] lg:p-5 lg:pt-5">
+          {createGroupForm}
+        </div>
+      </div>
     </main>
   )
 }

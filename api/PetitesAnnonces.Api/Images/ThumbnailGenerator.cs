@@ -1,5 +1,5 @@
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
 namespace PetitesAnnonces.Api.Images;
@@ -15,8 +15,11 @@ public static class ThumbnailGenerator
     // On le recompresse donc lui aussi, avec une taille max plus généreuse que la miniature.
     private const int MaxOriginalDimension = 1600;
 
-    public const string ThumbnailContentType = "image/jpeg";
-    public const string OptimizedContentType = "image/jpeg";
+    // WebP plutôt que JPEG : ~25-35% de poids en moins à qualité équivalente, supporté par
+    // tous les navigateurs ciblés (spec §9, performance). SixLabors.ImageSharp l'encode
+    // nativement, aucun package supplémentaire n'est nécessaire.
+    public const string ThumbnailContentType = "image/webp";
+    public const string OptimizedContentType = "image/webp";
 
     public static async Task<MemoryStream> CreateAsync(Stream source, CancellationToken cancellationToken = default)
     {
@@ -30,14 +33,14 @@ public static class ThumbnailGenerator
         }));
 
         var output = new MemoryStream();
-        await image.SaveAsync(output, new JpegEncoder { Quality = 80 }, cancellationToken);
+        await image.SaveAsync(output, new WebpEncoder { Quality = 80 }, cancellationToken);
         output.Position = 0;
         return output;
     }
 
     /// <summary>
     /// Recompresse l'image « originale » affichée sur la page de détail : redimensionnée si
-    /// besoin (ResizeMode.Max ne fait jamais d'agrandissement) et réencodée en JPEG qualité 85,
+    /// besoin (ResizeMode.Max ne fait jamais d'agrandissement) et réencodée en WebP qualité 85,
     /// pour réduire le poids du payload sans dégradation visible (spec §9, performance).
     /// </summary>
     public static async Task<MemoryStream> CreateOptimizedOriginalAsync(Stream source, CancellationToken cancellationToken = default)
@@ -52,7 +55,7 @@ public static class ThumbnailGenerator
         }));
 
         var output = new MemoryStream();
-        await image.SaveAsync(output, new JpegEncoder { Quality = 85 }, cancellationToken);
+        await image.SaveAsync(output, new WebpEncoder { Quality = 85 }, cancellationToken);
         output.Position = 0;
         return output;
     }

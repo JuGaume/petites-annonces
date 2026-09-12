@@ -69,6 +69,25 @@ public class DailyDigestService(
             }
         }
 
+        var savedSearchAlerts = await digestBuilder.BuildSavedSearchAlertsAsync(now, cancellationToken);
+        foreach (var alert in savedSearchAlerts)
+        {
+            var groupUrl = BuildGroupUrl(configuration, alert.GroupId);
+            var html = DigestEmailTemplate.RenderSavedSearchAlert(alert, groupUrl);
+
+            await emailSender.SendAsync(
+                alert.UserEmail,
+                $"Nouvelles annonces pour votre alerte « {alert.Label} »",
+                html,
+                cancellationToken);
+
+            var savedSearch = await db.SavedSearches.FirstOrDefaultAsync(s => s.Id == alert.SavedSearchId, cancellationToken);
+            if (savedSearch is not null)
+            {
+                savedSearch.LastNotifiedAt = now;
+            }
+        }
+
         await db.SaveChangesAsync(cancellationToken);
     }
 

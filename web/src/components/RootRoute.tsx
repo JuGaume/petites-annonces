@@ -1,6 +1,7 @@
 import { useAuth } from '../auth/AuthContext'
 import { HomePage } from '../pages/HomePage'
 import { WelcomePage } from '../pages/WelcomePage'
+import { AppHeader } from './AppHeader'
 
 /**
  * Racine du site : le tableau de bord (HomePage) une fois connecté, une vitrine
@@ -15,5 +16,14 @@ export function RootRoute() {
     return <p className="p-4 text-center text-[var(--color-text-muted)]">Chargement...</p>
   }
 
-  return user ? <HomePage /> : <WelcomePage />
+  if (!user) {
+    return <WelcomePage />
+  }
+
+  return (
+    <>
+      <AppHeader />
+      <HomePage />
+    </>
+  )
 }

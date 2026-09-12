@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiJson, type FavoriteListingResponse, type ListingStatus } from '../lib/apiClient'
+import { ImagePlaceholder } from '../components/ImagePlaceholder'
 
 const STATUS_LABELS: Record<ListingStatus, string> = {
   Available: 'Disponible',
   Reserved: 'Réservé',
   Sold: 'Vendu',
+}
+
+const STATUS_BADGE: Record<ListingStatus, { bg: string; text: string }> = {
+  Available: { bg: '#dcfce7', text: '#166534' },
+  Reserved: { bg: '#fef9c3', text: '#854d0e' },
+  Sold: { bg: '#f3f4f6', text: '#6b7280' },
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -25,12 +32,12 @@ export function FavoritesPage() {
   }, [])
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8">
-      <Link to="/" className="text-sm text-[var(--color-text-muted)]">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 bg-[var(--color-bg)] px-4 py-6 text-[var(--color-text)] lg:max-w-6xl lg:px-8 lg:py-10">
+      <Link to="/" className="text-sm text-[var(--color-text-muted)] lg:hidden">
         ← Mes groupes
       </Link>
 
-      <h1 className="text-2xl font-semibold">Mes favoris</h1>
+      <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Mes favoris</h1>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -41,34 +48,44 @@ export function FavoritesPage() {
         </p>
       )}
 
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
         {favorites?.map((favorite) => (
           <li key={favorite.listingId}>
             <Link
               to={`/groups/${favorite.groupId}/listings/${favorite.listingId}`}
-              className="flex flex-col overflow-hidden rounded border border-[var(--color-border)] bg-[var(--color-surface)]"
+              className="flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]"
             >
               <div className="aspect-square bg-[var(--color-bg)]">
-                {favorite.thumbnailUrl && (
+                {favorite.thumbnailUrl ? (
                   <img
                     src={favorite.thumbnailUrl}
                     alt={favorite.title}
                     loading="lazy"
                     className="h-full w-full object-cover"
                   />
+                ) : (
+                  <ImagePlaceholder />
                 )}
               </div>
-              <div className="flex flex-col gap-0.5 p-2">
-                <span className="truncate text-sm font-medium">{favorite.title}</span>
+              <div className="flex flex-col gap-1 p-2.5">
+                <span className="truncate text-sm font-semibold">{favorite.title}</span>
                 <span className="truncate text-xs text-[var(--color-text-muted)]">{favorite.groupName}</span>
-                <span className="text-xs text-[var(--color-text-muted)]">
-                  {favorite.price !== null ? `${favorite.price} €` : MODE_LABELS[favorite.mode]}
-                </span>
-                {favorite.status !== 'Available' && (
-                  <span className="text-xs font-medium text-[var(--color-accent)]">
-                    {STATUS_LABELS[favorite.status]}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-sm font-bold">
+                    {favorite.price !== null ? `${favorite.price} €` : MODE_LABELS[favorite.mode]}
                   </span>
-                )}
+                  {favorite.status !== 'Available' && (
+                    <span
+                      className="rounded-[var(--radius-pill)] px-2 py-0.5 text-[10px] font-bold"
+                      style={{
+                        background: STATUS_BADGE[favorite.status].bg,
+                        color: STATUS_BADGE[favorite.status].text,
+                      }}
+                    >
+                      {STATUS_LABELS[favorite.status]}
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
           </li>

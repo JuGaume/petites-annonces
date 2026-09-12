@@ -152,7 +152,7 @@ export function AccountPage() {
 
   if (loadError) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 bg-[var(--color-bg)] px-4 text-center text-[var(--color-text)]">
         <p className="text-red-600">{loadError}</p>
         <Link to="/" className="text-sm font-medium text-[var(--color-accent)]">
           Retour à mes groupes
@@ -166,21 +166,29 @@ export function AccountPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8">
-      <Link to="/" className="text-sm text-[var(--color-text-muted)]">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 bg-[var(--color-bg)] px-4 py-6 text-[var(--color-text)] lg:max-w-4xl lg:px-8 lg:py-10">
+      <Link to="/" className="text-sm text-[var(--color-text-muted)] lg:hidden">
         ← Mes groupes
       </Link>
 
-      <h1 className="text-2xl font-semibold">Mon compte</h1>
+      <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Mon compte</h1>
 
-      <section className="flex flex-col items-center gap-3">
-        <div className="h-24 w-24 overflow-hidden rounded-full bg-[var(--color-bg)]">
-          {account.photoUrl && (
+      {/* Desktop : photo dans une carte latérale à gauche, formulaires empilés dans une
+          colonne plus large à droite — au lieu d'une pile unique et étroite. */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:items-start lg:gap-8">
+
+      <section className="flex flex-col items-center gap-3 lg:rounded-2xl lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:p-6">
+        <div className="h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+          {account.photoUrl ? (
             <img src={account.photoUrl} alt={account.displayName} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg)] text-2xl font-bold text-[var(--color-accent)]">
+              {account.displayName.charAt(0).toUpperCase()}
+            </div>
           )}
         </div>
         <div className="flex gap-2">
-          <label className="cursor-pointer rounded border border-[var(--color-border)] px-3 py-2 text-sm">
+          <label className="cursor-pointer rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-accent)]">
             {isSavingPhoto ? 'Envoi...' : 'Changer la photo'}
             <input
               type="file"
@@ -194,7 +202,7 @@ export function AccountPage() {
             <button
               onClick={handleDeletePhoto}
               disabled={isSavingPhoto}
-              className="rounded border border-[var(--color-border)] px-3 py-2 text-sm disabled:opacity-60"
+              className="rounded-[var(--radius-pill)] border border-[var(--color-border)] px-3.5 py-1.5 text-sm text-[var(--color-text-muted)] disabled:opacity-60"
             >
               Retirer
             </button>
@@ -203,7 +211,8 @@ export function AccountPage() {
         {photoError && <p className="text-sm text-red-600">{photoError}</p>}
       </section>
 
-      <form onSubmit={handleSaveProfile} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
+      <div className="flex flex-col gap-6 lg:col-span-2">
+      <form onSubmit={handleSaveProfile} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6 lg:rounded-2xl lg:border lg:bg-[var(--color-surface)] lg:p-6">
         <h2 className="font-semibold">Profil</h2>
         <input
           type="text"
@@ -211,27 +220,27 @@ export function AccountPage() {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         <input
           type="tel"
           placeholder="Téléphone (optionnel)"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         {profileError && <p className="text-sm text-red-600">{profileError}</p>}
         {profileNotice && <p className="text-sm text-[var(--color-accent)]">{profileNotice}</p>}
         <button
           type="submit"
           disabled={isSavingProfile}
-          className="self-start rounded bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+          className="self-start rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-4 py-2 text-sm font-bold text-[var(--color-accent)] disabled:opacity-60"
         >
           {isSavingProfile ? 'Enregistrement...' : 'Enregistrer'}
         </button>
       </form>
 
-      <form onSubmit={handleChangeEmail} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
+      <form onSubmit={handleChangeEmail} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6 lg:rounded-2xl lg:border lg:bg-[var(--color-surface)] lg:p-6">
         <h2 className="font-semibold">Adresse email</h2>
         <p className="text-sm text-[var(--color-text-muted)]">Actuelle : {account.email}</p>
         <input
@@ -240,7 +249,7 @@ export function AccountPage() {
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         <input
           type="password"
@@ -248,20 +257,20 @@ export function AccountPage() {
           value={emailPassword}
           onChange={(e) => setEmailPassword(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         {emailError && <p className="text-sm text-red-600">{emailError}</p>}
         {emailNotice && <p className="text-sm text-[var(--color-accent)]">{emailNotice}</p>}
         <button
           type="submit"
           disabled={isSavingEmail}
-          className="self-start rounded border border-[var(--color-border)] px-3 py-2 text-sm disabled:opacity-60"
+          className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-accent)] disabled:opacity-60"
         >
           {isSavingEmail ? 'Enregistrement...' : "Changer l'email"}
         </button>
       </form>
 
-      <form onSubmit={handleChangePassword} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
+      <form onSubmit={handleChangePassword} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6 lg:rounded-2xl lg:border lg:bg-[var(--color-surface)] lg:p-6">
         <h2 className="font-semibold">Mot de passe</h2>
         <input
           type="password"
@@ -269,7 +278,7 @@ export function AccountPage() {
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         <input
           type="password"
@@ -278,18 +287,20 @@ export function AccountPage() {
           onChange={(e) => setNewPassword(e.target.value)}
           required
           minLength={8}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
         {passwordNotice && <p className="text-sm text-[var(--color-accent)]">{passwordNotice}</p>}
         <button
           type="submit"
           disabled={isSavingPassword}
-          className="self-start rounded border border-[var(--color-border)] px-3 py-2 text-sm disabled:opacity-60"
+          className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-accent)] disabled:opacity-60"
         >
           {isSavingPassword ? 'Enregistrement...' : 'Changer le mot de passe'}
         </button>
       </form>
+      </div>
+      </div>
     </main>
   )
 }

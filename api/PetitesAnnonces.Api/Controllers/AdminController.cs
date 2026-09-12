@@ -30,6 +30,70 @@ public class AdminController(
 
     private string CurrentUserId => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
+    /// <summary>Totaux globaux affichés sur l'onglet "Vue d'ensemble" — pas d'historique, juste l'état actuel.</summary>
+    [HttpGet("stats")]
+    public async Task<ActionResult<AdminStatsResponse>> GetStats()
+    {
+        var totalUsers = await db.Users.CountAsync();
+        // Même définition que UserManager.IsLockedOutAsync (utilisée par ListUsers) : un
+        // verrou dans le passé ne compte pas comme désactivé.
+        var disabledUsers = await db.Users.CountAsync(u => u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow);
+        var totalGroups = await db.Groups.CountAsync();
+        var totalListings = await db.Listings.CountAsync();
+        var availableListings = await db.Listings.CountAsync(l => l.Status == ListingStatus.Available);
+        var totalConversations = await db.Conversations.CountAsync();
+        var totalMessages = await db.Messages.CountAsync();
+        var pendingReports = await db.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
+
+        return new AdminStatsResponse(
+            totalUsers, disabledUsers, totalGroups, totalListings, availableListings, totalConversations,
+            totalMessages, pendingReports);
+    }
+
+    [HttpGet("reports")]
+    public async Task<ActionResult<List<AdminReportResponse>>> ListReports()
+    {
+        return await db.Reports.AsNoTracking()
+            .OrderByDescending(r => r.CreatedAt)
+            .Join(db.Listings, r => r.ListingId, l => l.Id, (r, l) => new { Report = r, Listing = l })
+            .Join(db.Groups, rl => rl.Listing.GroupId, g => g.Id, (rl, g) => new { rl.Report, rl.Listing, Group = g })
+            .Join(db.Users, rlg => rlg.Report.ReporterUserId, u => u.Id, (rlg, u) => new AdminReportResponse(
+                rlg.Report.Id,
+                rlg.Listing.Id,
+                rlg.Listing.Title,
+                rlg.Group.Id,
+                rlg.Group.Name,
+                rlg.Report.ReporterUserId,
+                u.DisplayName,
+                rlg.Report.Reason.ToString(),
+                rlg.Report.Details,
+                rlg.Report.Status.ToString(),
+                rlg.Report.CreatedAt))
+            .ToListAsync();
+    }
+
+    [HttpPost("reports/{reportId:int}/resolve")]
+    public Task<IActionResult> ResolveReport(int reportId) => SetReportStatusAsync(reportId, ReportStatus.Reviewed);
+
+    [HttpPost("reports/{reportId:int}/dismiss")]
+    public Task<IActionResult> DismissReport(int reportId) => SetReportStatusAsync(reportId, ReportStatus.Dismissed);
+
+    private async Task<IActionResult> SetReportStatusAsync(int reportId, ReportStatus status)
+    {
+        var report = await db.Reports.FirstOrDefaultAsync(r => r.Id == reportId);
+        if (report is null)
+        {
+            return NotFound();
+        }
+
+        report.Status = status;
+        report.ReviewedAt = DateTimeOffset.UtcNow;
+        report.ReviewedByAdminUserId = CurrentUserId;
+
+        await LogAdminActionAsync(status == ReportStatus.Reviewed ? "ResolveReport" : "DismissReport", reportId.ToString(), null);
+        return NoContent();
+    }
+
     [HttpGet("users")]
     public async Task<ActionResult<List<AdminUserResponse>>> ListUsers()
     {

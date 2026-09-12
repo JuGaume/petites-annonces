@@ -34,6 +34,10 @@ public class ListingsController(
         [FromQuery] int? categoryId,
         [FromQuery] ListingStatus? status,
         [FromQuery] string? search,
+        [FromQuery] string? authorUserId,
+        [FromQuery] decimal? minPrice,
+        [FromQuery] decimal? maxPrice,
+        [FromQuery] string? sortBy,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -51,6 +55,23 @@ public class ListingsController(
             query = query.Where(l => l.Status == status);
         }
 
+        if (!string.IsNullOrEmpty(authorUserId))
+        {
+            query = query.Where(l => l.AuthorUserId == authorUserId);
+        }
+
+        // Une annonce sans prix (don/troc) n'a jamais de prix à comparer : elle sort du
+        // filtre dès qu'une borne est posée, plutôt que d'être traitée comme 0 €.
+        if (minPrice is not null)
+        {
+            query = query.Where(l => l.Price != null && l.Price >= minPrice);
+        }
+
+        if (maxPrice is not null)
+        {
+            query = query.Where(l => l.Price != null && l.Price <= maxPrice);
+        }
+
         var trimmedSearch = search?.Trim();
         if (!string.IsNullOrEmpty(trimmedSearch))
         {
@@ -64,23 +85,72 @@ public class ListingsController(
 
         var currentUserId = CurrentUserId;
         var totalCount = await query.CountAsync();
-        var items = await query
-            .OrderByDescending(l => l.CreatedAt)
+
+        // Les dons/trocs (Price == null) restent toujours en fin de liste, quel que soit
+        // le sens du tri par prix — on trie d'abord sur "a un prix ?" avant le prix lui-même.
+        var orderedQuery = sortBy switch
+        {
+            "priceAsc" => query.OrderBy(l => l.Price == null).ThenBy(l => l.Price),
+            "priceDesc" => query.OrderBy(l => l.Price == null).ThenByDescending(l => l.Price),
+            _ => query.OrderByDescending(l => l.CreatedAt) as IOrderedQueryable<Listing>,
+        };
+
+        var items = await orderedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(l => new ListingSummaryResponse(
-                l.Id,
-                l.Title,
-                l.Price,
-                l.Mode.ToString(),
-                l.Status.ToString(),
-                l.Category!.Name,
-                l.Images.OrderBy(i => i.Position).Select(i => i.ThumbnailUrl).FirstOrDefault(),
-                l.CreatedAt,
-                db.Favorites.Any(f => f.UserId == currentUserId && f.ListingId == l.Id)))
+            .Join(db.Users, l => l.AuthorUserId, u => u.Id, (l, u) => new { Listing = l, Author = u })
+            .Select(x => new ListingSummaryResponse(
+                x.Listing.Id,
+                x.Listing.Title,
+                x.Listing.Price,
+                x.Listing.Mode.ToString(),
+                x.Listing.Status.ToString(),
+                x.Listing.Category!.Name,
+                x.Listing.Images.OrderBy(i => i.Position).Select(i => i.ThumbnailUrl).FirstOrDefault(),
+                x.Listing.CreatedAt,
+                db.Favorites.Any(f => f.UserId == currentUserId && f.ListingId == x.Listing.Id),
+                x.Listing.AuthorUserId,
+                x.Author.DisplayName))
             .ToListAsync();
 
         return new PagedResult<ListingSummaryResponse>(items, page, pageSize, totalCount);
+    }
+
+    /// <summary>Annonces disponibles de même catégorie dans le même groupe, hors l'annonce elle-même.</summary>
+    [HttpGet("{listingId:int}/similar")]
+    public async Task<ActionResult<List<ListingSummaryResponse>>> Similar(int groupId, int listingId)
+    {
+        const int MaxSimilar = 4;
+
+        var listing = await db.Listings.AsNoTracking().FirstOrDefaultAsync(l => l.Id == listingId && l.GroupId == groupId);
+        if (listing is null)
+        {
+            return NotFound();
+        }
+
+        var currentUserId = CurrentUserId;
+
+        return await db.Listings.AsNoTracking()
+            .Where(l => l.GroupId == groupId
+                && l.Id != listingId
+                && l.CategoryId == listing.CategoryId
+                && l.Status == ListingStatus.Available)
+            .OrderByDescending(l => l.CreatedAt)
+            .Take(MaxSimilar)
+            .Join(db.Users, l => l.AuthorUserId, u => u.Id, (l, u) => new { Listing = l, Author = u })
+            .Select(x => new ListingSummaryResponse(
+                x.Listing.Id,
+                x.Listing.Title,
+                x.Listing.Price,
+                x.Listing.Mode.ToString(),
+                x.Listing.Status.ToString(),
+                x.Listing.Category!.Name,
+                x.Listing.Images.OrderBy(i => i.Position).Select(i => i.ThumbnailUrl).FirstOrDefault(),
+                x.Listing.CreatedAt,
+                db.Favorites.Any(f => f.UserId == currentUserId && f.ListingId == x.Listing.Id),
+                x.Listing.AuthorUserId,
+                x.Author.DisplayName))
+            .ToListAsync();
     }
 
     [HttpGet("{listingId:int}")]
@@ -162,7 +232,12 @@ public class ListingsController(
             return Forbid();
         }
 
-        listing.Status = request.Status;
+        if (!Enum.TryParse<ListingStatus>(request.Status, ignoreCase: true, out var status))
+        {
+            return ValidationProblem("Statut invalide (Available, Reserved ou Sold attendu).");
+        }
+
+        listing.Status = status;
         listing.UpdatedAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync();
 

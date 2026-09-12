@@ -35,3 +35,14 @@ public record AuditLogEntryResponse(
     string? TargetId,
     string? Details,
     DateTimeOffset CreatedAt);
+
+/// <summary>Vue d'ensemble du tableau admin (page "Vue d'ensemble") : totaux globaux, pas d'historique.</summary>
+public record AdminStatsResponse(
+    int TotalUsers,
+    int DisabledUsers,
+    int TotalGroups,
+    int TotalListings,
+    int AvailableListings,
+    int TotalConversations,
+    int TotalMessages,
+    int PendingReports);

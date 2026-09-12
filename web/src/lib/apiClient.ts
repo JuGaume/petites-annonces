@@ -81,6 +81,22 @@ export interface ListingSummaryResponse {
   thumbnailUrl: string | null
   createdAt: string
   isFavorite: boolean
+  authorUserId: string
+  authorDisplayName: string
+}
+
+export type ListingSortBy = 'newest' | 'priceAsc' | 'priceDesc'
+
+export type ReportReason = 'Spam' | 'Inapproprie' | 'Interdit' | 'Autre'
+
+export interface SavedSearchResponse {
+  id: number
+  label: string
+  categoryId: number | null
+  search: string | null
+  minPrice: number | null
+  maxPrice: number | null
+  createdAt: string
 }
 
 export interface ListingDetailResponse {
@@ -187,6 +203,31 @@ export interface AuditLogEntryResponse {
   action: string
   targetId: string | null
   details: string | null
+  createdAt: string
+}
+
+export interface AdminStatsResponse {
+  totalUsers: number
+  disabledUsers: number
+  totalGroups: number
+  totalListings: number
+  availableListings: number
+  totalConversations: number
+  totalMessages: number
+  pendingReports: number
+}
+
+export interface AdminReportResponse {
+  id: number
+  listingId: number
+  listingTitle: string
+  groupId: number
+  groupName: string
+  reporterUserId: string
+  reporterDisplayName: string
+  reason: ReportReason
+  details: string | null
+  status: 'Pending' | 'Reviewed' | 'Dismissed'
   createdAt: string
 }
 
@@ -298,5 +339,15 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
     const body = await response.json().catch(() => null)
     throw new ApiError(response.status, extractErrorMessage(body, response.statusText || 'Une erreur est survenue.'))
   }
-  return response.json() as Promise<T>
+
+  // Beaucoup d'actions réussissent sans corps de réponse (204 No Content — favoris,
+  // suppressions, signalement...). response.json() lève une exception sur un corps
+  // vide, ce qui faisait passer ces appels par le chemin d'erreur des appelants (ex. le
+  // cœur des favoris qui "clignote" puis revient en arrière alors que l'action a bien
+  // été enregistrée côté serveur).
+  if (response.status === 204) {
+    return undefined as T
+  }
+  const text = await response.text()
+  return (text.length > 0 ? JSON.parse(text) : undefined) as T
 }

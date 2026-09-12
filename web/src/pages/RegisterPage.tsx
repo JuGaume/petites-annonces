@@ -37,7 +37,7 @@ export function RegisterPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 bg-[var(--color-bg)] px-6 text-[var(--color-text)]">
       <h1 className="text-2xl font-semibold">Créer un compte</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -47,7 +47,7 @@ export function RegisterPage() {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         <input
           type="email"
@@ -55,7 +55,7 @@ export function RegisterPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
         <input
           type="password"
@@ -64,7 +64,7 @@ export function RegisterPage() {
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={8}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
         />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -72,11 +72,17 @@ export function RegisterPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded bg-[var(--color-accent)] px-3 py-2 font-medium text-white disabled:opacity-60"
+          className="rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-3 py-2.5 font-bold text-[var(--color-accent)] disabled:opacity-60"
         >
           {isSubmitting ? 'Création...' : "S'inscrire"}
         </button>
       </form>
+
+      <div className="flex items-center gap-2.5">
+        <div className="h-px flex-1 bg-[var(--color-border)]" />
+        <div className="text-xs text-[#9ca3af]">ou</div>
+        <div className="h-px flex-1 bg-[var(--color-border)]" />
+      </div>
 
       <div className="flex items-center justify-center">
         <GoogleSignInButton />

@@ -11,3 +11,14 @@ public record GroupDigest(
     int GroupId,
     string GroupName,
     IReadOnlyList<DigestListingItem> NewListings);
+
+/// <summary>Alerte à envoyer pour une recherche enregistrée ayant de nouvelles annonces correspondantes.</summary>
+public record SavedSearchAlert(
+    int SavedSearchId,
+    string UserId,
+    string UserEmail,
+    string UserDisplayName,
+    int GroupId,
+    string GroupName,
+    string Label,
+    IReadOnlyList<DigestListingItem> Matches);

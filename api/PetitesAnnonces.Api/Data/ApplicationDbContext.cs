@@ -29,6 +29,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Favorite> Favorites => Set<Favorite>();
 
+    public DbSet<Report> Reports => Set<Report>();
+
+    public DbSet<SavedSearch> SavedSearches => Set<SavedSearch>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -155,6 +159,32 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(f => f.Listing)
                 .WithMany()
                 .HasForeignKey(f => f.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Report>(entity =>
+        {
+            entity.Property(r => r.Reason).HasConversion<string>().HasMaxLength(20);
+            entity.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
+            entity.Property(r => r.Details).HasMaxLength(500);
+            entity.HasIndex(r => r.ListingId);
+            entity.HasIndex(r => r.Status);
+            entity.HasOne(r => r.Listing)
+                .WithMany()
+                .HasForeignKey(r => r.ListingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<SavedSearch>(entity =>
+        {
+            entity.Property(s => s.Label).HasMaxLength(120).IsRequired();
+            entity.Property(s => s.Search).HasMaxLength(200);
+            entity.Property(s => s.MinPrice).HasColumnType("decimal(10,2)");
+            entity.Property(s => s.MaxPrice).HasColumnType("decimal(10,2)");
+            entity.HasIndex(s => new { s.UserId, s.GroupId });
+            entity.HasOne(s => s.Group)
+                .WithMany()
+                .HasForeignKey(s => s.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

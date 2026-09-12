@@ -27,7 +27,10 @@ public class CreateListingRequest
     public List<IFormFile> Images { get; set; } = [];
 }
 
-public record UpdateListingStatusRequest(ListingStatus Status);
+// `string` plutôt que `ListingStatus` : System.Text.Json désérialise un enum dans un
+// corps JSON en attendant un nombre par défaut, alors que le frontend envoie le nom
+// ("Reserved"). On parse nous-mêmes, comme pour GroupsController.UpdateMemberRole.
+public record UpdateListingStatusRequest(string Status);
 
 public record ListingImageResponse(int Id, string Url, string ThumbnailUrl);
 
@@ -40,7 +43,9 @@ public record ListingSummaryResponse(
     string CategoryName,
     string? ThumbnailUrl,
     DateTimeOffset CreatedAt,
-    bool IsFavorite);
+    bool IsFavorite,
+    string AuthorUserId,
+    string AuthorDisplayName);
 
 public record ListingDetailResponse(
     int Id,

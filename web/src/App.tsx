@@ -6,7 +6,6 @@ import { RootRoute } from './components/RootRoute'
 import { AccountPage } from './pages/AccountPage'
 import { AdminPage } from './pages/AdminPage'
 import { ConversationsListPage } from './pages/ConversationsListPage'
-import { ConversationThreadPage } from './pages/ConversationThreadPage'
 import { CreateListingPage } from './pages/CreateListingPage'
 import { FavoritesPage } from './pages/FavoritesPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -89,7 +88,7 @@ function App() {
             path="/conversations/:conversationId"
             element={
               <ProtectedRoute>
-                <ConversationThreadPage />
+                <ConversationsListPage />
               </ProtectedRoute>
             }
           />

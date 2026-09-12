@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { AppHeader } from './AppHeader'
 
 export function AdminRoute({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -17,5 +18,10 @@ export function AdminRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/" replace />
   }
 
-  return <>{children}</>
+  return (
+    <>
+      <AppHeader />
+      {children}
+    </>
+  )
 }
