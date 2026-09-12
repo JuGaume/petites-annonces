@@ -240,7 +240,7 @@ export function GroupDetailPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8 md:max-w-3xl md:px-8">
       <Link to="/" className="text-sm text-[var(--color-text-muted)]">
         ← Mes groupes
       </Link>
@@ -291,7 +291,7 @@ export function GroupDetailPage() {
 
       <section>
         <h2 className="mb-2 font-semibold">Membres ({members.length})</h2>
-        <ul className="flex flex-col gap-3">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-start">
           {members.map((member) => {
             const isSelf = member.userId === user?.id
             const isCreator = member.userId === group.createdByUserId

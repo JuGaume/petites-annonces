@@ -25,7 +25,7 @@ export function FavoritesPage() {
   }, [])
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8 md:max-w-5xl md:px-8">
       <Link to="/" className="text-sm text-[var(--color-text-muted)]">
         ← Mes groupes
       </Link>
@@ -41,7 +41,7 @@ export function FavoritesPage() {
         </p>
       )}
 
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {favorites?.map((favorite) => (
           <li key={favorite.listingId}>
             <Link

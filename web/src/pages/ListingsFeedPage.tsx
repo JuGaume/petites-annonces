@@ -123,7 +123,7 @@ export function ListingsFeedPage() {
   }, [hasMore, isLoading, page, loadPage])
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8 md:max-w-5xl md:px-8">
       <Link to={`/groups/${groupId}`} className="text-sm text-[var(--color-text-muted)]">
         ← Retour au groupe
       </Link>
@@ -138,39 +138,42 @@ export function ListingsFeedPage() {
         </Link>
       </div>
 
-      <input
-        type="search"
-        placeholder="Rechercher une annonce..."
-        value={searchInput}
-        onChange={(e) => setSearchInput(e.target.value)}
-        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm"
-      />
-
-      <div className="flex gap-2">
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-2 text-sm"
-        >
-          <option value="">Toutes catégories</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-2 text-sm"
-        >
-          <option value="">Tous statuts</option>
-          {Object.entries(STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+      {/* Barre de filtres alignée en ligne à partir de sm : sur mobile, la recherche
+          reste seule au-dessus des deux menus pour ne pas trop la rétrécir. */}
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          type="search"
+          placeholder="Rechercher une annonce..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm sm:flex-1"
+        />
+        <div className="flex gap-2">
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-2 text-sm sm:flex-none"
+          >
+            <option value="">Toutes catégories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-2 text-sm sm:flex-none"
+          >
+            <option value="">Tous statuts</option>
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -179,7 +182,7 @@ export function ListingsFeedPage() {
         <p className="text-sm text-[var(--color-text-muted)]">Aucune annonce pour le moment.</p>
       )}
 
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {items.map((listing) => (
           <li key={listing.id}>
             <Link

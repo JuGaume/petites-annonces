@@ -47,8 +47,8 @@ export function HomePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8">
-      <div className="flex items-center justify-between">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-8 md:max-w-4xl md:px-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Mes groupes</h1>
         <div className="flex items-center gap-3">
           {user?.roles.includes('Admin') && (
@@ -81,78 +81,88 @@ export function HomePage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {groups && groups.length === 0 && (
-        <p className="text-sm text-[var(--color-text-muted)]">
-          Vous ne faites partie d'aucun groupe pour le moment. Créez-en un pour commencer à
-          partager des annonces avec vos proches.
-        </p>
-      )}
-
-      {groups && groups.length > 0 && (
-        <ul className="flex flex-col gap-2">
-          {groups.map((group) => (
-            <li key={group.id}>
-              <Link
-                to={`/groups/${group.id}`}
-                className="flex items-center gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-              >
-                <div className="h-12 w-12 flex-none overflow-hidden rounded bg-[var(--color-bg)]">
-                  {group.imageUrl && (
-                    <img src={group.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{group.name}</span>
-                  <span className="block text-sm text-[var(--color-text-muted)]">
-                    {group.memberCount} membre{group.memberCount > 1 ? 's' : ''}
-                  </span>
-                </div>
-                {group.listingPreviewUrls.length > 0 && (
-                  <div className="flex flex-none -space-x-2">
-                    {group.listingPreviewUrls.map((url, index) => (
-                      <img
-                        key={url}
-                        src={url}
-                        alt=""
-                        loading="lazy"
-                        style={{ zIndex: group.listingPreviewUrls.length - index }}
-                        className="h-8 w-8 flex-none rounded-full border-2 border-[var(--color-surface)] object-cover"
-                      />
-                    ))}
-                  </div>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <form onSubmit={handleCreate} className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
-        <h2 className="font-semibold">Créer un groupe</h2>
-        <input
-          type="text"
-          placeholder="Nom du groupe"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-        />
-        <input
-          type="text"
-          placeholder="Description (optionnel)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
-        />
-
-        <button
-          type="submit"
-          disabled={isCreating}
-          className="rounded bg-[var(--color-accent)] px-3 py-2 font-medium text-white disabled:opacity-60"
+      {/* Formulaire en colonne latérale à droite à partir de lg, sous la liste en dessous
+          en mobile/tablette — évite que le contenu principal reste coincé dans une
+          colonne étroite sur un écran large (voir feedback desktop). */}
+      <div className="flex flex-col gap-6 lg:flex-row-reverse lg:items-start">
+        <form
+          onSubmit={handleCreate}
+          className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6 lg:w-72 lg:flex-none lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6"
         >
-          {isCreating ? 'Création...' : 'Créer le groupe'}
-        </button>
-      </form>
+          <h2 className="font-semibold">Créer un groupe</h2>
+          <input
+            type="text"
+            placeholder="Nom du groupe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          />
+          <input
+            type="text"
+            placeholder="Description (optionnel)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+          />
+
+          <button
+            type="submit"
+            disabled={isCreating}
+            className="rounded bg-[var(--color-accent)] px-3 py-2 font-medium text-white disabled:opacity-60"
+          >
+            {isCreating ? 'Création...' : 'Créer le groupe'}
+          </button>
+        </form>
+
+        <div className="min-w-0 flex-1">
+          {groups && groups.length === 0 && (
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Vous ne faites partie d'aucun groupe pour le moment. Créez-en un pour commencer à
+              partager des annonces avec vos proches.
+            </p>
+          )}
+
+          {groups && groups.length > 0 && (
+            <ul className="flex flex-col gap-2 md:grid md:grid-cols-2 md:items-start">
+              {groups.map((group) => (
+                <li key={group.id}>
+                  <Link
+                    to={`/groups/${group.id}`}
+                    className="flex items-center gap-3 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+                  >
+                    <div className="h-12 w-12 flex-none overflow-hidden rounded bg-[var(--color-bg)]">
+                      {group.imageUrl && (
+                        <img src={group.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">{group.name}</span>
+                      <span className="block text-sm text-[var(--color-text-muted)]">
+                        {group.memberCount} membre{group.memberCount > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {group.listingPreviewUrls.length > 0 && (
+                      <div className="flex flex-none -space-x-2">
+                        {group.listingPreviewUrls.map((url, index) => (
+                          <img
+                            key={url}
+                            src={url}
+                            alt=""
+                            loading="lazy"
+                            style={{ zIndex: group.listingPreviewUrls.length - index }}
+                            className="h-8 w-8 flex-none rounded-full border-2 border-[var(--color-surface)] object-cover"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </main>
   )
 }

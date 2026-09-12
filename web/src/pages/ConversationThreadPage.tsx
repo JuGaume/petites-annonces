@@ -96,7 +96,7 @@ export function ConversationThreadPage() {
     : null
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-8 md:max-w-2xl">
       <Link to="/conversations" className="mb-2 text-sm text-[var(--color-text-muted)]">
         ← Messages
       </Link>

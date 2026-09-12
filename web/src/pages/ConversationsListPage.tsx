@@ -15,7 +15,7 @@ export function ConversationsListPage() {
   }, [])
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 px-4 py-8 md:max-w-2xl">
       <Link to="/" className="text-sm text-[var(--color-text-muted)]">
         ← Mes groupes
       </Link>

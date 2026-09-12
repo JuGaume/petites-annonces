@@ -24,7 +24,7 @@ export function AdminPage() {
   const [tab, setTab] = useState<Tab>('users')
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8 lg:max-w-4xl lg:px-8">
       <Link to="/" className="text-sm text-[var(--color-text-muted)]">
         ← Mes groupes
       </Link>
