@@ -228,7 +228,7 @@ public class ListingsTests : IClassFixture<CustomWebApplicationFactory>
             .Content.ReadFromJsonAsync<ListingDetailResponse>())!;
         await client.PostAsync($"/groups/{group.Id}/listings", BuildListingForm(categoryB));
 
-        await client.PatchAsJsonAsync($"/groups/{group.Id}/listings/{listingA.Id}/status", new UpdateListingStatusRequest(ListingStatus.Sold));
+        await client.PatchAsJsonAsync($"/groups/{group.Id}/listings/{listingA.Id}/status", new UpdateListingStatusRequest(ListingStatus.Sold.ToString()));
 
         var byCategoryResponse = await client.GetFromJsonAsync<PagedResult<ListingSummaryResponse>>(
             $"/groups/{group.Id}/listings?categoryId={categoryA}");
@@ -298,11 +298,11 @@ public class ListingsTests : IClassFixture<CustomWebApplicationFactory>
         await JoinGroupAsync(owner, otherMember, group.Id);
 
         var forbiddenUpdate = await otherMember.PatchAsJsonAsync(
-            $"/groups/{group.Id}/listings/{listing.Id}/status", new UpdateListingStatusRequest(ListingStatus.Reserved));
+            $"/groups/{group.Id}/listings/{listing.Id}/status", new UpdateListingStatusRequest(ListingStatus.Reserved.ToString()));
         Assert.Equal(HttpStatusCode.Forbidden, forbiddenUpdate.StatusCode);
 
         var allowedUpdate = await owner.PatchAsJsonAsync(
-            $"/groups/{group.Id}/listings/{listing.Id}/status", new UpdateListingStatusRequest(ListingStatus.Reserved));
+            $"/groups/{group.Id}/listings/{listing.Id}/status", new UpdateListingStatusRequest(ListingStatus.Reserved.ToString()));
         Assert.Equal(HttpStatusCode.OK, allowedUpdate.StatusCode);
         var updated = await allowedUpdate.Content.ReadFromJsonAsync<ListingDetailResponse>();
         Assert.Equal("Reserved", updated!.Status);
