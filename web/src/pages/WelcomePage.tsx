@@ -16,12 +16,12 @@ import { useRevealOnScroll } from '../hooks/useRevealOnScroll'
  */
 
 const CATEGORY_TILES = [
-  { name: 'Meubles', bg: '#FDE7D3', stroke: '#C2410C', icon: Couch },
-  { name: 'Électronique', bg: '#DBEAFE', stroke: '#2563EB', icon: GameController },
-  { name: 'Vêtements', bg: '#FCE7F3', stroke: '#BE185C', icon: TShirt },
-  { name: 'Sport & Loisirs', bg: '#DCFCE7', stroke: '#15803D', icon: Barbell },
-  { name: 'Enfants & Bébé', bg: '#EDE9FE', stroke: '#6D28D9', icon: Baby },
-  { name: 'Autre', bg: '#CFFAFE', stroke: '#0E7490', icon: Package },
+  { name: 'Meubles', bg: 'var(--tint-orange-bg)', stroke: 'var(--tint-orange-text)', icon: Couch },
+  { name: 'Électronique', bg: 'var(--tint-blue-bg)', stroke: 'var(--tint-blue-text)', icon: GameController },
+  { name: 'Vêtements', bg: 'var(--tint-pink-bg)', stroke: 'var(--tint-pink-text)', icon: TShirt },
+  { name: 'Sport & Loisirs', bg: 'var(--tint-green-bg)', stroke: 'var(--tint-green-text)', icon: Barbell },
+  { name: 'Enfants & Bébé', bg: 'var(--tint-violet-bg)', stroke: 'var(--tint-violet-text)', icon: Baby },
+  { name: 'Autre', bg: 'var(--tint-cyan-bg)', stroke: 'var(--tint-cyan-text)', icon: Package },
 ]
 
 const STEPS = [
@@ -160,7 +160,7 @@ export function WelcomePage() {
           <LogoMark />
           <span className="text-base font-bold tracking-tight">Petites annonces</span>
         </div>
-        <Link to="/login" className="text-sm font-medium text-[var(--color-accent)]">
+        <Link to="/login" className="text-sm font-medium text-[var(--color-text)]">
           Connexion
         </Link>
       </div>
@@ -188,7 +188,7 @@ export function WelcomePage() {
               </Link>
               <Link
                 to="/login"
-                className="btn-press flex items-center justify-center rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-accent)]"
+                className="btn-press flex items-center justify-center rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-text)]"
               >
                 J'ai déjà un compte
               </Link>
@@ -243,7 +243,7 @@ export function WelcomePage() {
               Connexion
             </Link>
           </div>
-          <p className="text-xs leading-relaxed text-[#9ca3af] lg:max-w-sm lg:text-right">
+          <p className="text-xs leading-relaxed text-[var(--color-text-faint)] lg:max-w-sm lg:text-right">
             Gratuit, sans transaction en ligne.
             <br />
             Vos annonces ne sont visibles que par les membres de votre groupe.

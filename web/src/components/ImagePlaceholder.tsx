@@ -8,8 +8,8 @@ import { Image } from '@phosphor-icons/react'
  */
 export function ImagePlaceholder({ className = '' }: { className?: string }) {
   return (
-    <div className={`flex h-full w-full items-center justify-center bg-[#f3f4f6] ${className}`}>
-      <Image weight="bold" color="#d1d5db" style={{ width: '34%', height: '34%' }} />
+    <div className={`flex h-full w-full items-center justify-center bg-[var(--color-placeholder-bg)] ${className}`}>
+      <Image weight="bold" color="var(--color-placeholder-icon)" style={{ width: '34%', height: '34%' }} />
     </div>
   )
 }

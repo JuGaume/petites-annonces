@@ -229,7 +229,7 @@ export function GroupDetailPage() {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-red-600">{loadError}</p>
-        <Link to="/" className="text-sm font-medium text-[var(--color-accent)]">
+        <Link to="/" className="text-sm font-medium text-[var(--color-text)]">
           Retour à mes groupes
         </Link>
       </main>
@@ -293,7 +293,7 @@ export function GroupDetailPage() {
       </div>
 
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
-      {notice && <p className="text-sm text-[var(--color-accent)]">{notice}</p>}
+      {notice && <p className="text-sm text-[var(--color-text)]">{notice}</p>}
 
       {/* Desktop : membres en grille sur 2 colonnes (au lieu d'une pile étroite) à gauche,
           résumé email + invitation regroupés dans une carte latérale à droite. */}
@@ -327,7 +327,7 @@ export function GroupDetailPage() {
                     {isSelf && <span className="font-normal text-[var(--color-text-muted)]"> (vous)</span>}
                   </span>
                   {(isCreator || member.role === 'Admin') && (
-                    <span className="rounded-[var(--radius-pill)] bg-[#FEF3C7] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-accent)]">
+                    <span className="rounded-[var(--radius-pill)] bg-[var(--color-badge-bg)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-accent)]">
                       {isCreator ? 'Créateur' : 'Admin'}
                     </span>
                   )}
@@ -338,7 +338,7 @@ export function GroupDetailPage() {
                     <button
                       onClick={() => handleChangeRole(member.userId, member.role === 'Admin' ? 'Member' : 'Admin')}
                       disabled={isBusy}
-                      className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-3 py-1 text-xs font-semibold text-[var(--color-accent)] disabled:opacity-60"
+                      className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-3 py-1 text-xs font-semibold text-[var(--color-text)] disabled:opacity-60"
                     >
                       {member.role === 'Admin' ? 'Rétrograder en membre' : 'Promouvoir admin'}
                     </button>

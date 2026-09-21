@@ -61,7 +61,7 @@ export function JoinGroupPage() {
     return (
       <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-red-600">{previewError}</p>
-        <Link to="/" className="text-sm font-medium text-[var(--color-accent)]">
+        <Link to="/" className="text-sm font-medium text-[var(--color-text)]">
           Retour à l'accueil
         </Link>
       </main>
@@ -72,7 +72,7 @@ export function JoinGroupPage() {
     return (
       <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-4 px-4 text-center">
         <p>Cette invitation n'est plus valide.</p>
-        <Link to="/" className="text-sm font-medium text-[var(--color-accent)]">
+        <Link to="/" className="text-sm font-medium text-[var(--color-text)]">
           Retour à l'accueil
         </Link>
       </main>
@@ -83,7 +83,7 @@ export function JoinGroupPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-6 bg-[var(--color-bg)] px-7 text-center text-[var(--color-text)]">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FEF3C7]">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-badge-bg)]">
         <Users size={30} weight="bold" color="var(--color-accent)" />
       </div>
 
@@ -112,14 +112,14 @@ export function JoinGroupPage() {
           </Link>
           <Link
             to={`/login?redirect=${encodeURIComponent(redirect)}`}
-            className="w-full rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-4 py-3 font-bold text-[var(--color-accent)]"
+            className="w-full rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-4 py-3 font-bold text-[var(--color-text)]"
           >
             J'ai déjà un compte
           </Link>
         </div>
       )}
 
-      <p className="text-xs leading-relaxed text-[#9ca3af]">
+      <p className="text-xs leading-relaxed text-[var(--color-text-faint)]">
         Ce lien d'invitation est réservé aux personnes conviées par les membres du groupe.
       </p>
     </main>

@@ -7,12 +7,12 @@ import { apiJson, ApiError, type GroupResponse } from '../lib/apiClient'
 // Mêmes teintes pastel que la grille de catégories de la home publique — réutilisées ici
 // comme couleur de repli pour l'avatar d'un groupe sans image, par cohérence visuelle.
 const AVATAR_TINTS = [
-  { bg: '#FDE7D3', text: '#C2410C' },
-  { bg: '#DBEAFE', text: '#2563EB' },
-  { bg: '#FCE7F3', text: '#BE185C' },
-  { bg: '#DCFCE7', text: '#15803D' },
-  { bg: '#EDE9FE', text: '#6D28D9' },
-  { bg: '#CFFAFE', text: '#0E7490' },
+  { bg: 'var(--tint-orange-bg)', text: 'var(--tint-orange-text)' },
+  { bg: 'var(--tint-blue-bg)', text: 'var(--tint-blue-text)' },
+  { bg: 'var(--tint-pink-bg)', text: 'var(--tint-pink-text)' },
+  { bg: 'var(--tint-green-bg)', text: 'var(--tint-green-text)' },
+  { bg: 'var(--tint-violet-bg)', text: 'var(--tint-violet-text)' },
+  { bg: 'var(--tint-cyan-bg)', text: 'var(--tint-cyan-text)' },
 ]
 
 function avatarTint(id: number | string) {
@@ -36,7 +36,7 @@ function NavIconLink({
       to={to}
       aria-label={label}
       title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-accent)] hover:bg-[var(--color-surface)]"
+      className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text)] hover:bg-[var(--color-surface)]"
     >
       {children}
     </Link>
@@ -95,14 +95,14 @@ export function HomePage() {
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
-        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af] lg:bg-[var(--color-bg)]"
+        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)] lg:bg-[var(--color-bg)]"
       />
       <input
         type="text"
         placeholder="Description (optionnel)"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af] lg:bg-[var(--color-bg)]"
+        className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)] lg:bg-[var(--color-bg)]"
       />
 
       <button
@@ -174,7 +174,7 @@ export function HomePage() {
                 <li key={group.id}>
                   <Link
                     to={`/groups/${group.id}`}
-                    className="flex items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 lg:h-full lg:items-start lg:hover:border-[var(--color-accent)]"
+                    className="flex items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 lg:h-full lg:items-start lg:hover:border-[var(--color-text)]"
                   >
                     <div
                       className="flex h-11 w-11 flex-none items-center justify-center overflow-hidden rounded-xl text-base font-bold"
@@ -220,7 +220,7 @@ export function HomePage() {
                         ))}
                       </div>
                     )}
-                    <CaretRight size={18} weight="bold" color="#9ca3af" className="lg:hidden" />
+                    <CaretRight size={18} weight="bold" color="var(--color-text-faint)" className="lg:hidden" />
                   </Link>
                 </li>
               )

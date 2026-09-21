@@ -167,7 +167,7 @@ function UsersSection() {
           <button
             onClick={() => toggle(user)}
             disabled={busyUserId === user.id}
-            className="flex-none rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-accent)] disabled:opacity-60"
+            className="flex-none rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-text)] disabled:opacity-60"
           >
             {user.isDisabled ? 'Réactiver' : 'Désactiver'}
           </button>
@@ -352,10 +352,10 @@ function ReportsSection() {
             <span
               className={`flex-none rounded-[var(--radius-pill)] px-2.5 py-0.5 text-xs font-bold ${
                 report.status === 'Pending'
-                  ? 'bg-[#fef9c3] text-[#854d0e]'
+                  ? 'bg-[var(--status-reserved-bg)] text-[var(--status-reserved-text)]'
                   : report.status === 'Reviewed'
-                    ? 'bg-[#dcfce7] text-[#166534]'
-                    : 'bg-[#f3f4f6] text-[#6b7280]'
+                    ? 'bg-[var(--status-available-bg)] text-[var(--status-available-text)]'
+                    : 'bg-[var(--status-sold-bg)] text-[var(--status-sold-text)]'
               }`}
             >
               {report.status === 'Pending' ? 'En attente' : report.status === 'Reviewed' ? 'Traité' : 'Rejeté'}
@@ -366,7 +366,7 @@ function ReportsSection() {
               <button
                 onClick={() => act(report, 'resolve')}
                 disabled={busyReportId === report.id}
-                className="rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-accent)] disabled:opacity-60"
+                className="rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-text)] disabled:opacity-60"
               >
                 Marquer traité
               </button>
@@ -462,7 +462,7 @@ function CategoriesSection() {
           placeholder="Nouvelle catégorie"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         <button
           type="submit"

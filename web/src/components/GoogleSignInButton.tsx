@@ -44,8 +44,9 @@ export function GoogleSignInButton() {
         },
       })
       if (containerRef.current) {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
         window.google?.accounts.id.renderButton(containerRef.current, {
-          theme: 'outline',
+          theme: isDark ? 'filled_black' : 'outline',
           size: 'large',
           width: 300,
         })

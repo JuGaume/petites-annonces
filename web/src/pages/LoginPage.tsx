@@ -39,7 +39,7 @@ export function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         <input
           type="password"
@@ -47,7 +47,7 @@ export function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -63,7 +63,7 @@ export function LoginPage() {
 
       <div className="flex items-center gap-2.5">
         <div className="h-px flex-1 bg-[var(--color-border)]" />
-        <div className="text-xs text-[#9ca3af]">ou</div>
+        <div className="text-xs text-[var(--color-text-faint)]">ou</div>
         <div className="h-px flex-1 bg-[var(--color-border)]" />
       </div>
 
@@ -75,7 +75,7 @@ export function LoginPage() {
         Pas encore de compte ?{' '}
         <Link
           to={`/register?redirect=${encodeURIComponent(redirect)}`}
-          className="font-medium text-[var(--color-accent)]"
+          className="font-medium text-[var(--color-text)]"
         >
           Inscription
         </Link>

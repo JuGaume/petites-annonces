@@ -8,12 +8,12 @@ import { connectToConversation } from '../lib/conversationsHub'
 
 // Mêmes teintes pastel que les avatars de groupe/conversations.
 const AVATAR_TINTS = [
-  { bg: '#FDE7D3', text: '#C2410C' },
-  { bg: '#DBEAFE', text: '#2563EB' },
-  { bg: '#FCE7F3', text: '#BE185C' },
-  { bg: '#DCFCE7', text: '#15803D' },
-  { bg: '#EDE9FE', text: '#6D28D9' },
-  { bg: '#CFFAFE', text: '#0E7490' },
+  { bg: 'var(--tint-orange-bg)', text: 'var(--tint-orange-text)' },
+  { bg: 'var(--tint-blue-bg)', text: 'var(--tint-blue-text)' },
+  { bg: 'var(--tint-pink-bg)', text: 'var(--tint-pink-text)' },
+  { bg: 'var(--tint-green-bg)', text: 'var(--tint-green-text)' },
+  { bg: 'var(--tint-violet-bg)', text: 'var(--tint-violet-text)' },
+  { bg: 'var(--tint-cyan-bg)', text: 'var(--tint-cyan-text)' },
 ]
 
 function avatarTint(id: string) {
@@ -165,7 +165,7 @@ export function ConversationThreadPage() {
           placeholder="Écrire un message..."
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="flex-1 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm placeholder:text-[#9ca3af]"
+          className="flex-1 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm placeholder:text-[var(--color-text-faint)]"
         />
         <button
           type="submit"

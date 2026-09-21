@@ -19,11 +19,81 @@
   --color-surface: #ffffff;
   --color-text: #1c2b3a;
   --color-text-muted: #6b7280;
+  --color-text-faint: #9ca3af;
   --color-border: #e5e7eb;
   --radius-pill: 999px;
   --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
 
-  color-scheme: light;
+  /* Cadre "pas de photo" (ImagePlaceholder) et pastille inactive du carrousel photo. */
+  --color-placeholder-bg: #f3f4f6;
+  --color-placeholder-icon: #d1d5db;
+
+  /* Badge "Créateur/Admin" (GroupDetailPage) et icône d'invitation (JoinGroupPage) : reste
+     ambre chaud dans les deux thèmes, pas de variante sombre (voir plus bas). */
+  --color-badge-bg: #fef3c7;
+
+  /* Teintes pastel des catégories (WelcomePage) et des avatars de repli (groupes,
+     conversations) — un seul jeu de valeurs, réutilisé partout via ces variables plutôt
+     que dupliqué en dur dans chaque fichier. */
+  --tint-orange-bg: #fde7d3;
+  --tint-orange-text: #c2410c;
+  --tint-blue-bg: #dbeafe;
+  --tint-blue-text: #2563eb;
+  --tint-pink-bg: #fce7f3;
+  --tint-pink-text: #be185c;
+  --tint-green-bg: #dcfce7;
+  --tint-green-text: #15803d;
+  --tint-violet-bg: #ede9fe;
+  --tint-violet-text: #6d28d9;
+  --tint-cyan-bg: #cffafe;
+  --tint-cyan-text: #0e7490;
+
+  /* Badges de statut (annonce disponible/réservée/vendue, signalement en attente/traité/
+     rejeté) — même famille vert/jaune/gris réutilisée pour les deux domaines. */
+  --status-available-bg: #dcfce7;
+  --status-available-text: #166534;
+  --status-reserved-bg: #fef9c3;
+  --status-reserved-text: #854d0e;
+  --status-sold-bg: #f3f4f6;
+  --status-sold-text: #6b7280;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-accent-hover: #4a6480;
+    --color-gold-hover: #ffc933;
+    --color-bg: #10161d;
+    --color-surface: #1a222c;
+    --color-text: #f3efe4;
+    --color-text-muted: #9aa7b5;
+    --color-text-faint: #6f7a87;
+    --color-border: #2a3542;
+
+    --color-placeholder-bg: #232b35;
+    --color-placeholder-icon: #4b5563;
+
+    --tint-orange-bg: #3a2416;
+    --tint-orange-text: #ffb27a;
+    --tint-blue-bg: #172a45;
+    --tint-blue-text: #7fabf5;
+    --tint-pink-bg: #3a1a29;
+    --tint-pink-text: #f592bb;
+    --tint-green-bg: #163a24;
+    --tint-green-text: #6ee6a0;
+    --tint-violet-bg: #2a1f45;
+    --tint-violet-text: #b794f6;
+    --tint-cyan-bg: #123338;
+    --tint-cyan-text: #67d9ea;
+
+    --status-available-bg: #163a24;
+    --status-available-text: #6ee6a0;
+    --status-reserved-bg: #3a2f10;
+    --status-reserved-text: #f0c869;
+    --status-sold-bg: #262b33;
+    --status-sold-text: #9aa7b5;
+  }
 }
 
 body {

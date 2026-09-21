@@ -7,12 +7,12 @@ import { ConversationThread } from '../components/ConversationThread'
 
 // Mêmes teintes pastel que les avatars de groupe — repli pour l'initiale de l'interlocuteur.
 const AVATAR_TINTS = [
-  { bg: '#FDE7D3', text: '#C2410C' },
-  { bg: '#DBEAFE', text: '#2563EB' },
-  { bg: '#FCE7F3', text: '#BE185C' },
-  { bg: '#DCFCE7', text: '#15803D' },
-  { bg: '#EDE9FE', text: '#6D28D9' },
-  { bg: '#CFFAFE', text: '#0E7490' },
+  { bg: 'var(--tint-orange-bg)', text: 'var(--tint-orange-text)' },
+  { bg: 'var(--tint-blue-bg)', text: 'var(--tint-blue-text)' },
+  { bg: 'var(--tint-pink-bg)', text: 'var(--tint-pink-text)' },
+  { bg: 'var(--tint-green-bg)', text: 'var(--tint-green-text)' },
+  { bg: 'var(--tint-violet-bg)', text: 'var(--tint-violet-text)' },
+  { bg: 'var(--tint-cyan-bg)', text: 'var(--tint-cyan-text)' },
 ]
 
 function avatarTint(id: string) {
@@ -108,7 +108,7 @@ export function ConversationsListPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-sm font-semibold">{otherPartyName}</span>
                       {conversation.lastMessageAt && (
-                        <span className="flex-none text-xs text-[#9ca3af]">
+                        <span className="flex-none text-xs text-[var(--color-text-faint)]">
                           {formatConversationTime(conversation.lastMessageAt)}
                         </span>
                       )}
@@ -135,7 +135,7 @@ export function ConversationsListPage() {
           <ConversationThread conversationId={selectedId} conversation={selectedConversation} />
         ) : (
           <div className="hidden h-full flex-col items-center justify-center gap-2 px-8 text-center text-sm text-[var(--color-text-muted)] lg:flex">
-            <ChatCircle size={40} weight="bold" color="#d1d5db" />
+            <ChatCircle size={40} weight="bold" color="var(--color-placeholder-icon)" />
             Sélectionnez une conversation pour l'ouvrir.
           </div>
         )}

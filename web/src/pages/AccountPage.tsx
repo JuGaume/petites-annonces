@@ -154,7 +154,7 @@ export function AccountPage() {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 bg-[var(--color-bg)] px-4 text-center text-[var(--color-text)]">
         <p className="text-red-600">{loadError}</p>
-        <Link to="/" className="text-sm font-medium text-[var(--color-accent)]">
+        <Link to="/" className="text-sm font-medium text-[var(--color-text)]">
           Retour à mes groupes
         </Link>
       </main>
@@ -182,13 +182,13 @@ export function AccountPage() {
           {account.photoUrl ? (
             <img src={account.photoUrl} alt={account.displayName} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg)] text-2xl font-bold text-[var(--color-accent)]">
+            <div className="flex h-full w-full items-center justify-center bg-[var(--color-bg)] text-2xl font-bold text-[var(--color-text)]">
               {account.displayName.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
         <div className="flex gap-2">
-          <label className="cursor-pointer rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-accent)]">
+          <label className="cursor-pointer rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-3.5 py-1.5 text-sm font-semibold text-[var(--color-text)]">
             {isSavingPhoto ? 'Envoi...' : 'Changer la photo'}
             <input
               type="file"
@@ -220,17 +220,17 @@ export function AccountPage() {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         <input
           type="tel"
           placeholder="Téléphone (optionnel)"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         {profileError && <p className="text-sm text-red-600">{profileError}</p>}
-        {profileNotice && <p className="text-sm text-[var(--color-accent)]">{profileNotice}</p>}
+        {profileNotice && <p className="text-sm text-[var(--color-text)]">{profileNotice}</p>}
         <button
           type="submit"
           disabled={isSavingProfile}
@@ -249,7 +249,7 @@ export function AccountPage() {
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         <input
           type="password"
@@ -257,14 +257,14 @@ export function AccountPage() {
           value={emailPassword}
           onChange={(e) => setEmailPassword(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         {emailError && <p className="text-sm text-red-600">{emailError}</p>}
-        {emailNotice && <p className="text-sm text-[var(--color-accent)]">{emailNotice}</p>}
+        {emailNotice && <p className="text-sm text-[var(--color-text)]">{emailNotice}</p>}
         <button
           type="submit"
           disabled={isSavingEmail}
-          className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-accent)] disabled:opacity-60"
+          className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] disabled:opacity-60"
         >
           {isSavingEmail ? 'Enregistrement...' : "Changer l'email"}
         </button>
@@ -278,7 +278,7 @@ export function AccountPage() {
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           required
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         <input
           type="password"
@@ -287,14 +287,14 @@ export function AccountPage() {
           onChange={(e) => setNewPassword(e.target.value)}
           required
           minLength={8}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]"
+          className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]"
         />
         {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
-        {passwordNotice && <p className="text-sm text-[var(--color-accent)]">{passwordNotice}</p>}
+        {passwordNotice && <p className="text-sm text-[var(--color-text)]">{passwordNotice}</p>}
         <button
           type="submit"
           disabled={isSavingPassword}
-          className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-[var(--color-accent)] disabled:opacity-60"
+          className="self-start rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-text)] px-4 py-2 text-sm font-semibold text-[var(--color-text)] disabled:opacity-60"
         >
           {isSavingPassword ? 'Enregistrement...' : 'Changer le mot de passe'}
         </button>

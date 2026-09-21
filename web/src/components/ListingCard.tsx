@@ -12,9 +12,9 @@ export const STATUS_LABELS: Record<ListingStatus, string> = {
 }
 
 const STATUS_BADGE: Record<ListingStatus, { bg: string; text: string }> = {
-  Available: { bg: '#dcfce7', text: '#166534' },
-  Reserved: { bg: '#fef9c3', text: '#854d0e' },
-  Sold: { bg: '#f3f4f6', text: '#6b7280' },
+  Available: { bg: 'var(--status-available-bg)', text: 'var(--status-available-text)' },
+  Reserved: { bg: 'var(--status-reserved-bg)', text: 'var(--status-reserved-text)' },
+  Sold: { bg: 'var(--status-sold-bg)', text: 'var(--status-sold-text)' },
 }
 
 const MODE_LABELS: Record<string, string> = {

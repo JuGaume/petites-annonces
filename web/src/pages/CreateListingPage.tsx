@@ -53,7 +53,7 @@ function Segmented<T extends string>({
 }
 
 const inputClass =
-  'rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[#9ca3af]'
+  'rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[15px] placeholder:text-[var(--color-text-faint)]'
 
 export function CreateListingPage() {
   const { groupId } = useParams<{ groupId: string }>()
@@ -154,8 +154,8 @@ export function CreateListingPage() {
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-x-8 lg:gap-y-5">
           <div className="flex flex-col gap-4">
             <Field label={`Photos (jusqu'à ${MAX_IMAGES})`}>
-              <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#d1d5db] bg-[var(--color-surface)] lg:h-32 lg:bg-[var(--color-bg)]">
-                <Camera size={24} weight="bold" color="#9ca3af" />
+              <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[var(--color-placeholder-icon)] bg-[var(--color-surface)] lg:h-32 lg:bg-[var(--color-bg)]">
+                <Camera size={24} weight="bold" color="var(--color-text-faint)" />
                 <span className="text-[13px] text-[var(--color-text-muted)]">Ajouter des photos</span>
                 <input
                   type="file"

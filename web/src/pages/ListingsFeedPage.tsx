@@ -226,7 +226,7 @@ export function ListingsFeedPage() {
       </div>
 
       {authorId && (
-        <Link to={`/groups/${groupId}/listings`} className="-mt-2 self-start text-sm text-[var(--color-accent)]">
+        <Link to={`/groups/${groupId}/listings`} className="-mt-2 self-start text-sm text-[var(--color-text)]">
           ← Voir toutes les annonces du groupe
         </Link>
       )}
@@ -235,7 +235,7 @@ export function ListingsFeedPage() {
         <MagnifyingGlass
           size={16}
           weight="bold"
-          color="#9ca3af"
+          color="var(--color-text-faint)"
           className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2"
         />
         <input
@@ -243,7 +243,7 @@ export function ListingsFeedPage() {
           placeholder="Rechercher une annonce..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className="w-full rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-surface)] py-2.5 pl-9 pr-3.5 text-sm placeholder:text-[#9ca3af]"
+          className="w-full rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-surface)] py-2.5 pl-9 pr-3.5 text-sm placeholder:text-[var(--color-text-faint)]"
         />
       </div>
 
@@ -303,7 +303,7 @@ export function ListingsFeedPage() {
         <button
           type="button"
           onClick={() => setShowAlerts((v) => !v)}
-          className="ml-auto flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--color-accent)]"
+          className="ml-auto flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--color-text)]"
         >
           <Bell size={14} weight="bold" />
           Mes alertes{savedSearches && savedSearches.length > 0 ? ` (${savedSearches.length})` : ''}

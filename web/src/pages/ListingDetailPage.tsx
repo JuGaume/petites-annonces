@@ -29,9 +29,9 @@ const STATUS_LABELS: Record<ListingStatus, string> = {
 }
 
 const STATUS_BADGE: Record<ListingStatus, { bg: string; text: string }> = {
-  Available: { bg: '#dcfce7', text: '#166534' },
-  Reserved: { bg: '#fef9c3', text: '#854d0e' },
-  Sold: { bg: '#f3f4f6', text: '#6b7280' },
+  Available: { bg: 'var(--status-available-bg)', text: 'var(--status-available-text)' },
+  Reserved: { bg: 'var(--status-reserved-bg)', text: 'var(--status-reserved-text)' },
+  Sold: { bg: 'var(--status-sold-bg)', text: 'var(--status-sold-text)' },
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -66,7 +66,7 @@ function relativeTime(iso: string): string {
 }
 
 function HeartIcon({ filled }: { filled: boolean }) {
-  return <Heart size={20} weight={filled ? 'fill' : 'bold'} color={filled ? '#ef4444' : 'var(--color-accent)'} />
+  return <Heart size={20} weight={filled ? 'fill' : 'bold'} color={filled ? '#ef4444' : 'var(--color-text)'} />
 }
 
 export function ListingDetailPage() {
@@ -201,7 +201,7 @@ export function ListingDetailPage() {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 bg-[var(--color-bg)] px-4 text-center text-[var(--color-text)]">
         <p className="text-red-600">{loadError}</p>
-        <Link to={`/groups/${groupId}/listings`} className="text-sm font-medium text-[var(--color-accent)]">
+        <Link to={`/groups/${groupId}/listings`} className="text-sm font-medium text-[var(--color-text)]">
           Retour aux annonces
         </Link>
       </main>
@@ -248,7 +248,7 @@ export function ListingDetailPage() {
               <div
                 key={image.id}
                 className="h-1.5 w-1.5 rounded-full"
-                style={{ background: index === activePhoto ? 'var(--color-accent)' : '#d1d5db' }}
+                style={{ background: index === activePhoto ? 'var(--color-accent)' : 'var(--color-placeholder-icon)' }}
               />
             ))}
           </div>
@@ -336,7 +336,7 @@ export function ListingDetailPage() {
             ) : isAuthor ? (
               <p className="text-sm text-[var(--color-text-muted)]">
                 Les messages des personnes intéressées apparaissent dans{' '}
-                <Link to="/conversations" className="font-medium text-[var(--color-accent)]">
+                <Link to="/conversations" className="font-medium text-[var(--color-text)]">
                   vos conversations
                 </Link>
                 .
@@ -367,7 +367,7 @@ export function ListingDetailPage() {
                         key={status}
                         onClick={() => updateStatus(status)}
                         disabled={isBusy}
-                        className="rounded-[var(--radius-pill)] border border-[var(--color-accent)] px-3 py-1.5 text-sm font-medium text-[var(--color-accent)] disabled:opacity-60"
+                        className="rounded-[var(--radius-pill)] border border-[var(--color-text)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] disabled:opacity-60"
                       >
                         Marquer {STATUS_LABELS[status].toLowerCase()}
                       </button>
