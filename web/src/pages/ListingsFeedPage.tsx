@@ -10,7 +10,7 @@ import {
   type PagedResult,
   type SavedSearchResponse,
 } from '../lib/apiClient'
-import { ImagePlaceholder } from '../components/ImagePlaceholder'
+import { ListingCard, STATUS_LABELS } from '../components/ListingCard'
 
 const SORT_LABELS: Record<ListingSortBy, string> = {
   newest: 'Plus récentes',
@@ -23,24 +23,6 @@ const SORT_LABELS: Record<ListingSortBy, string> = {
 const SEARCH_DEBOUNCE_MS = 400
 
 const PAGE_SIZE = 20
-
-const STATUS_LABELS: Record<ListingStatus, string> = {
-  Available: 'Disponible',
-  Reserved: 'Réservé',
-  Sold: 'Vendu',
-}
-
-const STATUS_BADGE: Record<ListingStatus, { bg: string; text: string }> = {
-  Available: { bg: '#dcfce7', text: '#166534' },
-  Reserved: { bg: '#fef9c3', text: '#854d0e' },
-  Sold: { bg: '#f3f4f6', text: '#6b7280' },
-}
-
-const MODE_LABELS: Record<string, string> = {
-  Sale: 'Vente',
-  Donation: 'Don',
-  Trade: 'Troc',
-}
 
 function Chip({
   active,
@@ -63,23 +45,6 @@ function Chip({
     >
       {children}
     </button>
-  )
-}
-
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill={filled ? '#ef4444' : 'none'}
-      stroke={filled ? '#ef4444' : '#ffffff'}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
   )
 }
 
@@ -404,57 +369,14 @@ export function ListingsFeedPage() {
       )}
 
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
-        {items.map((listing) => (
-          <li key={listing.id}>
-            <Link
-              to={`/groups/${groupId}/listings/${listing.id}`}
-              className="relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]"
-            >
-              <div className="aspect-square bg-[var(--color-bg)]">
-                {listing.thumbnailUrl ? (
-                  <img
-                    src={listing.thumbnailUrl}
-                    alt={listing.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <ImagePlaceholder />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  toggleFavorite(listing)
-                }}
-                aria-label={listing.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/40"
-              >
-                <HeartIcon filled={listing.isFavorite} />
-              </button>
-              <div className="flex flex-col gap-1 p-2.5">
-                <span className="truncate text-sm font-semibold">{listing.title}</span>
-                <span className="truncate text-xs text-[var(--color-text-muted)]">{listing.categoryName}</span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-sm font-bold">
-                    {listing.price !== null ? `${listing.price} €` : MODE_LABELS[listing.mode]}
-                  </span>
-                  {listing.status !== 'Available' && (
-                    <span
-                      className="rounded-[var(--radius-pill)] px-2 py-0.5 text-[10px] font-bold"
-                      style={{
-                        background: STATUS_BADGE[listing.status].bg,
-                        color: STATUS_BADGE[listing.status].text,
-                      }}
-                    >
-                      {STATUS_LABELS[listing.status]}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Link>
-          </li>
+        {items.map((listing, index) => (
+          <ListingCard
+            key={listing.id}
+            listing={listing}
+            groupId={groupId}
+            index={index}
+            onToggleFavorite={toggleFavorite}
+          />
         ))}
       </ul>
 

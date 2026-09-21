@@ -21,6 +21,7 @@
   --color-text-muted: #6b7280;
   --color-border: #e5e7eb;
   --radius-pill: 999px;
+  --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
 
   color-scheme: light;
 }
@@ -30,4 +31,56 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/*
+ * Carte d'annonce — retour au survol et apparition au scroll (voir ListingCard.tsx).
+ * Mouvement volontairement discret : une carte de grille catalogue est vue des
+ * dizaines de fois par session, le retour doit rester rapide et quasi imperceptible.
+ */
+.listing-card {
+  transition: transform 150ms var(--ease-out-ui), box-shadow 150ms var(--ease-out-ui);
+}
+
+.listing-card-image {
+  transition: transform 250ms var(--ease-out-ui);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .listing-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px -10px rgb(28 43 58 / 0.28);
+  }
+
+  .listing-card:hover .listing-card-image {
+    transform: scale(1.04);
+  }
+}
+
+.listing-card-reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 350ms var(--ease-out-ui), transform 350ms var(--ease-out-ui);
+}
+
+.listing-card-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listing-card:hover,
+  .listing-card:hover .listing-card-image {
+    transform: none;
+  }
+
+  .listing-card-image {
+    transition: none;
+  }
+
+  .listing-card-reveal {
+    transform: none;
+    transition: opacity 200ms ease;
+    transition-delay: 0ms;
+  }
 }
