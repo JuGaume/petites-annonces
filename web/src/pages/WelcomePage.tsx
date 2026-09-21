@@ -87,12 +87,12 @@ const CATEGORY_TILES = [
 
 const STEPS = [
   {
-    title: 'Créez ou rejoignez un groupe',
-    text: "Votre entreprise, vos amis ou votre famille — invitez par lien ou par email, vous seul décidez qui en fait partie.",
+    title: 'Invitez vos proches dans un groupe privé',
+    text: "Famille, amis ou collègues : un simple lien d'invitation suffit, vous seul décidez qui peut rejoindre votre groupe.",
   },
   {
     title: 'Déposez vos annonces',
-    text: 'Un objet à vendre, à donner ou à échanger — photos, prix et catégorie en quelques secondes.',
+    text: 'Un objet à vendre, à donner ou à échanger : photos, prix et catégorie en quelques secondes.',
   },
   {
     title: 'Échangez directement',
@@ -253,12 +253,12 @@ export function WelcomePage() {
             colonne étroite perdue au milieu de l'écran. */}
         <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:px-8 lg:py-12">
           <div className="flex flex-col gap-3.5 px-6 pb-7 pt-2 lg:px-0 lg:pb-0 lg:pt-0">
-            <h1 className="text-[30px] font-bold leading-tight tracking-tight lg:text-4xl">
-              Les petites annonces, juste entre vous.
+            <h1 className="text-[30px] font-bold leading-tight tracking-tight lg:text-3xl">
+              Votre petit cercle, pour vos petites annonces.
             </h1>
             <p className="text-base leading-relaxed text-[var(--color-text-muted)] lg:text-lg">
-              Un groupe privé avec vos proches ou vos collègues pour échanger vos objets — en toute
-              confidentialité, personne d'autre ne voit vos annonces.
+              Créez un groupe privé avec vos amis, famille ou collègues, invitez-les en un lien, et
+              échangez vos objets en toute confidentialité.
             </p>
 
             {/* CTA */}
@@ -267,7 +267,7 @@ export function WelcomePage() {
                 to="/register"
                 className="btn-press flex items-center justify-center rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-accent)]"
               >
-                Créer un compte gratuitement
+                Créer mon groupe gratuitement
               </Link>
               <Link
                 to="/login"
