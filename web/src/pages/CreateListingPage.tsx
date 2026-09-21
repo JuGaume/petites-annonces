@@ -1,3 +1,4 @@
+import { Camera, X } from '@phosphor-icons/react'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -138,9 +139,7 @@ export function CreateListingPage() {
           aria-label="Annuler"
           className="flex h-8 w-8 items-center justify-center"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <X size={20} weight="bold" />
         </Link>
         <h1 className="text-[15px] font-semibold lg:text-xl">Nouvelle annonce</h1>
         <div className="w-8" />
@@ -156,10 +155,7 @@ export function CreateListingPage() {
           <div className="flex flex-col gap-4">
             <Field label={`Photos (jusqu'à ${MAX_IMAGES})`}>
               <label className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#d1d5db] bg-[var(--color-surface)] lg:h-32 lg:bg-[var(--color-bg)]">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
+                <Camera size={24} weight="bold" color="#9ca3af" />
                 <span className="text-[13px] text-[var(--color-text-muted)]">Ajouter des photos</span>
                 <input
                   type="file"

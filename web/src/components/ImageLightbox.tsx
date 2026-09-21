@@ -1,3 +1,4 @@
+import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { useEffect } from 'react'
 
 interface ImageLightboxProps {
@@ -40,9 +41,7 @@ export function ImageLightbox({ images, index, onClose, onNavigate }: ImageLight
         aria-label="Fermer"
         className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
+        <X size={20} weight="bold" />
       </button>
 
       {images.length > 1 && (
@@ -56,9 +55,7 @@ export function ImageLightbox({ images, index, onClose, onNavigate }: ImageLight
             aria-label="Photo précédente"
             className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white lg:left-6"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
+            <CaretLeft size={22} weight="bold" />
           </button>
           <button
             type="button"
@@ -69,9 +66,7 @@ export function ImageLightbox({ images, index, onClose, onNavigate }: ImageLight
             aria-label="Photo suivante"
             className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white lg:right-6"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
+            <CaretRight size={22} weight="bold" />
           </button>
         </>
       )}

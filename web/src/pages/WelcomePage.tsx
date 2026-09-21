@@ -1,3 +1,4 @@
+import { Barbell, Baby, Couch, GameController, Package, TShirt } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll'
 
@@ -15,74 +16,12 @@ import { useRevealOnScroll } from '../hooks/useRevealOnScroll'
  */
 
 const CATEGORY_TILES = [
-  {
-    name: 'Meubles',
-    bg: '#FDE7D3',
-    stroke: '#C2410C',
-    icon: (
-      <>
-        <rect x="3" y="11" width="18" height="7" rx="2" />
-        <path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3" />
-        <path d="M4 18v1M20 18v1" />
-      </>
-    ),
-  },
-  {
-    name: 'Électronique',
-    bg: '#DBEAFE',
-    stroke: '#2563EB',
-    icon: (
-      <>
-        <rect x="2" y="8" width="20" height="9" rx="4" />
-        <path d="M6 11.5v3M4.5 13h3" />
-        <circle cx="15" cy="11.5" r="1" />
-        <circle cx="18" cy="13.5" r="1" />
-      </>
-    ),
-  },
-  {
-    name: 'Vêtements',
-    bg: '#FCE7F3',
-    stroke: '#BE185C',
-    icon: <path d="M9 4l3-1 3 1 3.5 3-2.5 2v12H8V9L5.5 7z" />,
-  },
-  {
-    name: 'Sport & Loisirs',
-    bg: '#DCFCE7',
-    stroke: '#15803D',
-    icon: (
-      <>
-        <rect x="2" y="9" width="3" height="6" rx="1" />
-        <rect x="19" y="9" width="3" height="6" rx="1" />
-        <path d="M7 12h10" />
-        <rect x="6.5" y="10" width="2.5" height="4" rx="0.5" />
-        <rect x="15" y="10" width="2.5" height="4" rx="0.5" />
-      </>
-    ),
-  },
-  {
-    name: 'Enfants & Bébé',
-    bg: '#EDE9FE',
-    stroke: '#6D28D9',
-    icon: (
-      <>
-        <rect x="4" y="4" width="16" height="16" rx="3" />
-        <path d="M12 4v16M4 12h16" />
-      </>
-    ),
-  },
-  {
-    name: 'Autre',
-    bg: '#CFFAFE',
-    stroke: '#0E7490',
-    icon: (
-      <>
-        <path d="M21 8l-9-5-9 5 9 5 9-5z" />
-        <path d="M3 8v8l9 5 9-5V8" />
-        <path d="M12 13v8" />
-      </>
-    ),
-  },
+  { name: 'Meubles', bg: '#FDE7D3', stroke: '#C2410C', icon: Couch },
+  { name: 'Électronique', bg: '#DBEAFE', stroke: '#2563EB', icon: GameController },
+  { name: 'Vêtements', bg: '#FCE7F3', stroke: '#BE185C', icon: TShirt },
+  { name: 'Sport & Loisirs', bg: '#DCFCE7', stroke: '#15803D', icon: Barbell },
+  { name: 'Enfants & Bébé', bg: '#EDE9FE', stroke: '#6D28D9', icon: Baby },
+  { name: 'Autre', bg: '#CFFAFE', stroke: '#0E7490', icon: Package },
 ]
 
 const STEPS = [
@@ -160,18 +99,7 @@ function HeroPreviewCard({ card }: { card: (typeof HERO_PREVIEW_CARDS)[number] }
           className="relative flex aspect-square items-center justify-center"
           style={{ background: card.category.bg }}
         >
-          <svg
-            width="32%"
-            height="32%"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={card.category.stroke}
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {card.category.icon}
-          </svg>
+          <card.category.icon size={32} weight="bold" color={card.category.stroke} />
           {card.badge && (
             <span className="absolute left-2 top-2 rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
               {card.badge}
@@ -217,18 +145,7 @@ function CategoryTile({ category, index }: { category: (typeof CATEGORY_TILES)[n
       className={`welcome-category-tile flex flex-col items-center gap-2 rounded-2xl px-2 py-4 text-center lg:py-6 ${isVisible ? 'is-visible' : ''}`}
       style={{ background: category.bg, transitionDelay: `${index * 60}ms` }}
     >
-      <svg
-        width="26"
-        height="26"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={category.stroke}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {category.icon}
-      </svg>
+      <category.icon size={26} weight="bold" color={category.stroke} />
       <div className="text-xs font-semibold">{category.name}</div>
     </div>
   )

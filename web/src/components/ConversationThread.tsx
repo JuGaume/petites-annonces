@@ -1,3 +1,4 @@
+import { CaretLeft, PaperPlaneTilt } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import type { HubConnection } from '@microsoft/signalr'
@@ -121,9 +122,7 @@ export function ConversationThread({
     <div className="flex h-full min-h-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)] lg:min-h-0">
       <div className="flex flex-none items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
         <Link to="/conversations" aria-label="Messages" className="flex-none lg:hidden">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <CaretLeft size={20} weight="bold" />
         </Link>
         <div
           className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-sm font-bold"
@@ -174,10 +173,7 @@ export function ConversationThread({
           aria-label="Envoyer"
           className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--color-gold)] disabled:opacity-60"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 2L11 13" />
-            <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-          </svg>
+          <PaperPlaneTilt size={16} weight="bold" color="var(--color-accent)" />
         </button>
       </form>
     </div>

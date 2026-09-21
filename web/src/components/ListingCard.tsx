@@ -1,3 +1,4 @@
+import { Heart } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 import type { ListingStatus, ListingSummaryResponse } from '../lib/apiClient'
 import { formatListingAge, isRecentListing } from '../lib/freshness'
@@ -29,20 +30,7 @@ const REVEAL_STAGGER_MS = 40
 const REVEAL_STAGGER_CYCLE = 8
 
 function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill={filled ? '#ef4444' : 'none'}
-      stroke={filled ? '#ef4444' : '#ffffff'}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  )
+  return <Heart size={15} weight={filled ? 'fill' : 'bold'} color={filled ? '#ef4444' : '#ffffff'} />
 }
 
 export function ListingCard({

@@ -1,3 +1,4 @@
+import { CaretRight, ChatCircle, Heart, Plus, Shield } from '@phosphor-icons/react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -109,9 +110,7 @@ export function HomePage() {
         disabled={isCreating}
         className="flex items-center justify-center gap-2 rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-3 py-2.5 font-bold text-[var(--color-accent)] disabled:opacity-60"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <Plus size={16} weight="bold" />
         {isCreating ? 'Création...' : 'Créer le groupe'}
       </button>
     </form>
@@ -126,20 +125,14 @@ export function HomePage() {
         <div className="flex items-center gap-0.5 lg:hidden">
           {user?.roles.includes('Admin') && (
             <NavIconLink to="/admin" label="Administration">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
+              <Shield size={19} weight="bold" />
             </NavIconLink>
           )}
           <NavIconLink to="/favorites" label="Favoris">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            <Heart size={19} weight="bold" />
           </NavIconLink>
           <NavIconLink to="/conversations" label="Messages">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
+            <ChatCircle size={19} weight="bold" />
           </NavIconLink>
           <Link to="/account" className="ml-1 flex items-center" aria-label="Mon compte">
             {user?.photoUrl ? (
@@ -227,9 +220,7 @@ export function HomePage() {
                         ))}
                       </div>
                     )}
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lg:hidden">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
+                    <CaretRight size={18} weight="bold" color="#9ca3af" className="lg:hidden" />
                   </Link>
                 </li>
               )

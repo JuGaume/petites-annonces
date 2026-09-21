@@ -1,3 +1,4 @@
+import { Bell, MagnifyingGlass, Plus } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import {
@@ -219,9 +220,7 @@ export function ListingsFeedPage() {
           to={`/groups/${groupId}/listings/new`}
           className="flex items-center gap-1.5 rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-3.5 py-2 text-sm font-bold text-[var(--color-accent)]"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          <Plus size={15} weight="bold" />
           Déposer
         </Link>
       </div>
@@ -233,20 +232,12 @@ export function ListingsFeedPage() {
       )}
 
       <div className="relative lg:max-w-sm">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#9ca3af"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        <MagnifyingGlass
+          size={16}
+          weight="bold"
+          color="#9ca3af"
           className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="M21 21l-4.3-4.3" />
-        </svg>
+        />
         <input
           type="search"
           placeholder="Rechercher une annonce..."
@@ -314,10 +305,7 @@ export function ListingsFeedPage() {
           onClick={() => setShowAlerts((v) => !v)}
           className="ml-auto flex items-center gap-1.5 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--color-accent)]"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
+          <Bell size={14} weight="bold" />
           Mes alertes{savedSearches && savedSearches.length > 0 ? ` (${savedSearches.length})` : ''}
         </button>
       </div>

@@ -1,3 +1,4 @@
+import { ChatCircle } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -134,9 +135,7 @@ export function ConversationsListPage() {
           <ConversationThread conversationId={selectedId} conversation={selectedConversation} />
         ) : (
           <div className="hidden h-full flex-col items-center justify-center gap-2 px-8 text-center text-sm text-[var(--color-text-muted)] lg:flex">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
+            <ChatCircle size={40} weight="bold" color="#d1d5db" />
             Sélectionnez une conversation pour l'ouvrir.
           </div>
         )}
