@@ -63,7 +63,7 @@ export function ListingCard({
   return (
     <li
       ref={ref}
-      className={`listing-card-reveal ${isVisible ? 'is-visible' : ''}`}
+      className={`reveal-on-scroll ${isVisible ? 'is-visible' : ''}`}
       style={{ transitionDelay: `${revealDelayMs}ms` }}
     >
       <Link

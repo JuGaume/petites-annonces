@@ -73,7 +73,7 @@ test.describe('ListingCard', () => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto(`/groups/${GROUP_ID}/listings`)
 
-    const lastCardItem = page.locator('li.listing-card-reveal').last()
+    const lastCardItem = page.locator('li.reveal-on-scroll').last()
     await expect(lastCardItem).toHaveCSS('opacity', '0')
 
     await lastCardItem.scrollIntoViewIfNeeded()

@@ -57,13 +57,14 @@ body {
   }
 }
 
-.listing-card-reveal {
+/* Apparition douce au scroll, réutilisée par ListingCard et WelcomePage. */
+.reveal-on-scroll {
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 350ms var(--ease-out-ui), transform 350ms var(--ease-out-ui);
 }
 
-.listing-card-reveal.is-visible {
+.reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -78,9 +79,95 @@ body {
     transition: none;
   }
 
-  .listing-card-reveal {
+  .reveal-on-scroll {
     transform: none;
     transition: opacity 200ms ease;
     transition-delay: 0ms;
+  }
+}
+
+/*
+ * Vitrine publique (WelcomePage) : bouton avec retour tactile au clic, cartes du
+ * hero qui flottent doucement (preuve produit plutôt que faux mockup), tuiles de
+ * catégories façon collage qui se redressent au survol.
+ */
+.btn-press {
+  transition: transform 150ms var(--ease-out-ui);
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+.welcome-hero-card {
+  animation: welcome-hero-float 6s ease-in-out infinite;
+}
+
+.welcome-hero-card--a {
+  --card-rotate: -6deg;
+  animation-delay: 0s;
+}
+
+.welcome-hero-card--b {
+  --card-rotate: 3deg;
+  animation-delay: -3s;
+}
+
+@keyframes welcome-hero-float {
+  0%,
+  100% {
+    transform: rotate(var(--card-rotate)) translateY(0);
+  }
+  50% {
+    transform: rotate(var(--card-rotate)) translateY(-8px);
+  }
+}
+
+/*
+ * Tuile catégorie : légère inclinaison alternée façon collage (--tile-rotate composé
+ * dans chaque déclaration transform pour ne jamais entrer en conflit avec l'apparition
+ * au scroll ou le redressement au survol, qui portent aussi sur transform).
+ */
+.welcome-category-tile {
+  --tile-rotate: 0deg;
+  opacity: 0;
+  transform: translateY(8px) rotate(var(--tile-rotate));
+  transition: opacity 350ms var(--ease-out-ui), transform 200ms var(--ease-out-ui), box-shadow 200ms var(--ease-out-ui);
+}
+
+.welcome-category-tile:nth-child(odd) {
+  --tile-rotate: -2deg;
+}
+
+.welcome-category-tile:nth-child(even) {
+  --tile-rotate: 2deg;
+}
+
+.welcome-category-tile.is-visible {
+  opacity: 1;
+  transform: rotate(var(--tile-rotate));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .welcome-category-tile:hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 0 10px 20px -10px rgb(28 43 58 / 0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-hero-card {
+    animation: none;
+    transform: rotate(var(--card-rotate));
+  }
+
+  .welcome-category-tile {
+    transition: opacity 200ms ease;
+    transform: rotate(var(--tile-rotate));
+  }
+
+  .welcome-category-tile:hover {
+    transform: rotate(var(--tile-rotate));
+    box-shadow: none;
   }
 }

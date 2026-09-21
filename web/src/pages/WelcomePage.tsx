@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useRevealOnScroll } from '../hooks/useRevealOnScroll'
 
 /**
  * Vitrine affichée sur "/" tant qu'on n'est pas connecté (voir RootRoute) — pas un
@@ -7,8 +8,10 @@ import { Link } from 'react-router-dom'
  * statique (landing/, Phase 7) : celle-ci vit dans le SPA, pensée pour l'usage local/
  * app (pas d'enjeu SEO, web/index.html reste en noindex).
  *
- * Reprend la maquette "Main" du 2026-09-10 (charte crème/marine, accent or, boutons
- * pilule) — voir web/src/index.css pour les tokens.
+ * Reprend la charte crème/marine/or (voir web/src/index.css), mais remplace le mockup
+ * SVG du hero par un aperçu des vraies ListingCard et casse la symétrie des sections
+ * "Comment ça marche" / "Catégories" pour ne pas retomber dans les gabarits IA
+ * (3 cartes identiques, grille parfaite, eyebrows en majuscules partout).
  */
 
 const CATEGORY_TILES = [
@@ -97,6 +100,26 @@ const STEPS = [
   },
 ]
 
+// Deux annonces types réutilisant le style de la vraie ListingCard (mêmes cadres
+// d'image teintés que la section "Catégories" plus bas) : un aperçu honnête du
+// produit plutôt qu'un mockup d'app dessiné à la main.
+const HERO_PREVIEW_CARDS = [
+  {
+    variant: 'a' as const,
+    title: 'Vélo enfant 16"',
+    category: CATEGORY_TILES[3],
+    price: '45 €',
+    badge: 'Nouveau',
+  },
+  {
+    variant: 'b' as const,
+    title: 'Canapé 3 places',
+    category: CATEGORY_TILES[0],
+    price: 'Don',
+    badge: null,
+  },
+]
+
 function LogoMark({ size = 30 }: { size?: number }) {
   return (
     <div
@@ -120,39 +143,98 @@ function LogoMark({ size = 30 }: { size?: number }) {
   )
 }
 
-export function WelcomePage() {
-  const illustration = (
-    <div className="relative mx-6 mb-7 h-[200px] overflow-hidden rounded-2xl bg-[#FEF3C7] lg:mx-0 lg:mb-0 lg:h-full lg:min-h-[320px]">
-      <svg width="100%" height="100%" viewBox="0 0 342 200" fill="none" preserveAspectRatio="xMidYMid slice">
-        <circle cx="60" cy="164" r="90" fill="#FDE68A" />
-        <circle cx="300" cy="20" r="60" fill="#FDE68A" />
-        <g transform="translate(121,58)">
-          <rect x="0" y="34" width="100" height="66" rx="6" fill="#ffffff" />
-          <rect x="0" y="34" width="100" height="20" fill="#1C2B3A" />
-          <rect x="44" y="0" width="12" height="100" fill="#1C2B3A" />
-          <path d="M30 0 C10 0 10 24 34 24 L50 24 C50 8 46 0 30 0 Z" fill="#1C2B3A" />
-          <path d="M70 0 C90 0 90 24 66 24 L50 24 C50 8 54 0 70 0 Z" fill="#1C2B3A" />
-        </g>
-        <g transform="translate(226,30)">
-          <circle cx="16" cy="16" r="16" fill="#ffffff" />
-          <path
-            d="M22 15.5c0 3.6-3.3 6.5-7.4 6.5-1 0-1.9-.15-2.7-.4L8 23l1.1-3.6C8.4 18.3 8 17 8 15.5 8 11.9 11.3 9 15.4 9c4.1 0 7.4 2.9 7.4 6.5"
-            stroke="#1C2B3A"
-            strokeWidth="1.6"
+function HeroPreviewCard({ card }: { card: (typeof HERO_PREVIEW_CARDS)[number] }) {
+  // "a" (vélo, badge Nouveau) est la carte de devant : z-index au-dessus de "b", qui
+  // reste partiellement dans son ombre, façon deux photos posées l'une sur l'autre.
+  const position =
+    card.variant === 'a'
+      ? 'z-10 right-[2%] bottom-0 lg:right-[10%] lg:bottom-[6%]'
+      : 'z-0 left-[2%] top-0 lg:left-[6%] lg:top-[8%]'
+
+  return (
+    <div
+      className={`welcome-hero-card welcome-hero-card--${card.variant} absolute ${position} w-[50%] max-w-[180px] lg:w-[58%] lg:max-w-[210px]`}
+    >
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_16px_32px_-16px_rgba(28,43,58,0.28)]">
+        <div
+          className="relative flex aspect-square items-center justify-center"
+          style={{ background: card.category.bg }}
+        >
+          <svg
+            width="32%"
+            height="32%"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={card.category.stroke}
+            strokeWidth="1.7"
             strokeLinecap="round"
             strokeLinejoin="round"
-          />
-        </g>
-        <g transform="translate(58,20)">
-          <circle cx="15" cy="15" r="15" fill="#ffffff" />
-          <rect x="7" y="11" width="16" height="11" rx="2" stroke="#1C2B3A" strokeWidth="1.5" />
-          <circle cx="15" cy="16.5" r="3.2" stroke="#1C2B3A" strokeWidth="1.5" />
-          <path d="M12 11l1.2-2h3.6l1.2 2" stroke="#1C2B3A" strokeWidth="1.5" strokeLinecap="round" />
-        </g>
-      </svg>
+          >
+            {card.category.icon}
+          </svg>
+          {card.badge && (
+            <span className="absolute left-2 top-2 rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-2 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
+              {card.badge}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-0.5 p-2.5">
+          <span className="truncate text-sm font-semibold">{card.title}</span>
+          <span className="truncate text-xs text-[var(--color-text-muted)]">{card.category.name}</span>
+          <span className="text-sm font-bold">{card.price}</span>
+        </div>
+      </div>
     </div>
   )
+}
 
+function HowItWorksStep({ step, index }: { step: (typeof STEPS)[number]; index: number }) {
+  const { ref, isVisible } = useRevealOnScroll<HTMLDivElement>()
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal-on-scroll relative flex items-start gap-3.5 lg:flex-col lg:items-center lg:gap-3 lg:text-center ${isVisible ? 'is-visible' : ''}`}
+      style={{ transitionDelay: `${index * 80}ms` }}
+    >
+      <div className="relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[var(--color-gold)] text-[13px] font-bold text-[var(--color-accent)] ring-4 ring-[var(--color-bg)]">
+        {index + 1}
+      </div>
+      <div className="flex flex-col gap-0.5 pt-0.5 lg:pt-0">
+        <div className="text-[15px] font-semibold">{step.title}</div>
+        <div className="text-sm leading-snug text-[var(--color-text-muted)]">{step.text}</div>
+      </div>
+    </div>
+  )
+}
+
+function CategoryTile({ category, index }: { category: (typeof CATEGORY_TILES)[number]; index: number }) {
+  const { ref, isVisible } = useRevealOnScroll<HTMLDivElement>()
+
+  return (
+    <div
+      ref={ref}
+      className={`welcome-category-tile flex flex-col items-center gap-2 rounded-2xl px-2 py-4 text-center lg:py-6 ${isVisible ? 'is-visible' : ''}`}
+      style={{ background: category.bg, transitionDelay: `${index * 60}ms` }}
+    >
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={category.stroke}
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {category.icon}
+      </svg>
+      <div className="text-xs font-semibold">{category.name}</div>
+    </div>
+  )
+}
+
+export function WelcomePage() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
       {/* top bar / logo */}
@@ -167,11 +249,11 @@ export function WelcomePage() {
       </div>
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col lg:max-w-5xl">
-        {/* hero + illustration : côte à côte sur desktop plutôt qu'empilés dans une
+        {/* hero + aperçu produit : côte à côte sur desktop plutôt qu'empilés dans une
             colonne étroite perdue au milieu de l'écran. */}
         <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:px-8 lg:py-12">
           <div className="flex flex-col gap-3.5 px-6 pb-7 pt-2 lg:px-0 lg:pb-0 lg:pt-0">
-            <h1 className="text-[30px] font-bold leading-tight tracking-tight lg:text-5xl">
+            <h1 className="text-[30px] font-bold leading-tight tracking-tight lg:text-4xl">
               Les petites annonces, juste entre vous.
             </h1>
             <p className="text-base leading-relaxed text-[var(--color-text-muted)] lg:text-lg">
@@ -183,68 +265,49 @@ export function WelcomePage() {
             <div className="mt-3.5 flex flex-col gap-2.5 lg:flex-row">
               <Link
                 to="/register"
-                className="flex items-center justify-center rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-accent)]"
+                className="btn-press flex items-center justify-center rounded-[var(--radius-pill)] bg-[var(--color-gold)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-accent)]"
               >
                 Créer un compte gratuitement
               </Link>
               <Link
                 to="/login"
-                className="flex items-center justify-center rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-accent)]"
+                className="btn-press flex items-center justify-center rounded-[var(--radius-pill)] border-[1.5px] border-[var(--color-accent)] px-5 py-3.5 text-center text-[15px] font-bold text-[var(--color-accent)]"
               >
                 J'ai déjà un compte
               </Link>
             </div>
           </div>
 
-          {illustration}
-        </div>
-
-        {/* comment ça marche : 3 colonnes sur desktop plutôt qu'une liste verticale. */}
-        <div id="comment-ca-marche" className="flex flex-col gap-5 px-6 pb-8 lg:px-8 lg:pb-14 lg:pt-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-            Comment ça marche
-          </div>
-          <div className="flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:gap-8">
-            {STEPS.map((step, i) => (
-              <div key={step.title} className="flex items-start gap-3.5 lg:flex-col lg:items-start lg:gap-3 lg:rounded-2xl lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:p-5">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-gold)] text-[13px] font-bold text-[var(--color-accent)]">
-                  {i + 1}
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <div className="text-[15px] font-semibold">{step.title}</div>
-                  <div className="text-sm leading-snug text-[var(--color-text-muted)]">{step.text}</div>
-                </div>
-              </div>
+          {/* aperçu produit : deux vraies ListingCard superposées et inclinées, plutôt
+              qu'un mockup d'app dessiné à la main. */}
+          <div className="relative mx-6 mb-12 h-[290px] lg:mx-0 lg:mb-0 lg:h-full lg:min-h-[360px]">
+            {HERO_PREVIEW_CARDS.map((card) => (
+              <HeroPreviewCard key={card.variant} card={card} />
             ))}
           </div>
         </div>
 
-        {/* quelques catégories : les 6 tuiles sur une seule rangée sur desktop. */}
-        <div className="flex flex-col gap-4 px-6 pb-8 lg:px-8 lg:pb-16">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-            Quelques catégories
+        {/* comment ça marche : un parcours relié plutôt que 3 cartes interchangeables. */}
+        <div id="comment-ca-marche" className="flex flex-col gap-6 px-6 pb-8 lg:px-8 lg:pb-14 lg:pt-4">
+          <h2 className="text-xl font-bold tracking-tight lg:text-2xl">Comment ça marche</h2>
+          <div className="relative flex flex-col gap-8 lg:grid lg:grid-cols-3 lg:gap-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-[15px] top-3 bottom-3 w-px bg-[var(--color-border)] lg:bottom-auto lg:left-[16.6667%] lg:right-[16.6667%] lg:top-[15px] lg:h-px lg:w-auto"
+            />
+            {STEPS.map((step, i) => (
+              <HowItWorksStep key={step.title} step={step} index={i} />
+            ))}
           </div>
-          <div className="grid grid-cols-3 gap-2.5 lg:grid-cols-6 lg:gap-4">
-            {CATEGORY_TILES.map((cat) => (
-              <div
-                key={cat.name}
-                className="flex flex-col items-center gap-2 rounded-2xl px-2 py-4 text-center lg:py-6"
-                style={{ background: cat.bg }}
-              >
-                <svg
-                  width="26"
-                  height="26"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={cat.stroke}
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  {cat.icon}
-                </svg>
-                <div className="text-xs font-semibold">{cat.name}</div>
-              </div>
+        </div>
+
+        {/* quelques catégories : collage légèrement incliné plutôt qu'une grille
+            d'icônes parfaitement alignée. */}
+        <div className="flex flex-col gap-4 px-6 pb-8 lg:px-8 lg:pb-16">
+          <h2 className="text-xl font-bold tracking-tight lg:text-2xl">Quelques catégories</h2>
+          <div className="grid grid-cols-3 gap-3 lg:grid-cols-6 lg:gap-5">
+            {CATEGORY_TILES.map((category, i) => (
+              <CategoryTile key={category.name} category={category} index={i} />
             ))}
           </div>
         </div>
@@ -264,8 +327,9 @@ export function WelcomePage() {
             </Link>
           </div>
           <p className="text-xs leading-relaxed text-[#9ca3af] lg:max-w-sm lg:text-right">
-            Gratuit · Aucune transaction en ligne · Annonces visibles uniquement par les membres de
-            votre groupe.
+            Gratuit, sans transaction en ligne.
+            <br />
+            Vos annonces ne sont visibles que par les membres de votre groupe.
           </p>
         </div>
       </main>
