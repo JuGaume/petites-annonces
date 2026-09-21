@@ -57,43 +57,50 @@
   --status-sold-bg: #f3f4f6;
   --status-sold-text: #6b7280;
 
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-accent-hover: #4a6480;
-    --color-gold-hover: #ffc933;
-    --color-bg: #10161d;
-    --color-surface: #1a222c;
-    --color-text: #f3efe4;
-    --color-text-muted: #9aa7b5;
-    --color-text-faint: #6f7a87;
-    --color-border: #2a3542;
+/*
+ * data-theme est posé sur <html> avant le premier paint par le script inline dans
+ * index.html (choix mémorisé en localStorage, sinon préférence système une seule fois
+ * au chargement) — voir ThemeContext.tsx pour la bascule manuelle. Pas de media query
+ * prefers-color-scheme ici : ce serait une deuxième source de vérité en conflit avec le
+ * choix explicite de l'utilisateur.
+ */
+:root[data-theme='dark'] {
+  --color-accent-hover: #4a6480;
+  --color-gold-hover: #ffc933;
+  --color-bg: #10161d;
+  --color-surface: #1a222c;
+  --color-text: #f3efe4;
+  --color-text-muted: #9aa7b5;
+  --color-text-faint: #6f7a87;
+  --color-border: #2a3542;
 
-    --color-placeholder-bg: #232b35;
-    --color-placeholder-icon: #4b5563;
+  --color-placeholder-bg: #232b35;
+  --color-placeholder-icon: #4b5563;
 
-    --tint-orange-bg: #3a2416;
-    --tint-orange-text: #ffb27a;
-    --tint-blue-bg: #172a45;
-    --tint-blue-text: #7fabf5;
-    --tint-pink-bg: #3a1a29;
-    --tint-pink-text: #f592bb;
-    --tint-green-bg: #163a24;
-    --tint-green-text: #6ee6a0;
-    --tint-violet-bg: #2a1f45;
-    --tint-violet-text: #b794f6;
-    --tint-cyan-bg: #123338;
-    --tint-cyan-text: #67d9ea;
+  --tint-orange-bg: #3a2416;
+  --tint-orange-text: #ffb27a;
+  --tint-blue-bg: #172a45;
+  --tint-blue-text: #7fabf5;
+  --tint-pink-bg: #3a1a29;
+  --tint-pink-text: #f592bb;
+  --tint-green-bg: #163a24;
+  --tint-green-text: #6ee6a0;
+  --tint-violet-bg: #2a1f45;
+  --tint-violet-text: #b794f6;
+  --tint-cyan-bg: #123338;
+  --tint-cyan-text: #67d9ea;
 
-    --status-available-bg: #163a24;
-    --status-available-text: #6ee6a0;
-    --status-reserved-bg: #3a2f10;
-    --status-reserved-text: #f0c869;
-    --status-sold-bg: #262b33;
-    --status-sold-text: #9aa7b5;
-  }
+  --status-available-bg: #163a24;
+  --status-available-text: #6ee6a0;
+  --status-reserved-bg: #3a2f10;
+  --status-reserved-text: #f0c869;
+  --status-sold-bg: #262b33;
+  --status-sold-text: #9aa7b5;
+
+  color-scheme: dark;
 }
 
 body {

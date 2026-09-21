@@ -1,5 +1,6 @@
 import { Barbell, Baby, Couch, GameController, Package, TShirt } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { useRevealOnScroll } from '../hooks/useRevealOnScroll'
 
 /**
@@ -160,9 +161,12 @@ export function WelcomePage() {
           <LogoMark />
           <span className="text-base font-bold tracking-tight">Petites annonces</span>
         </div>
-        <Link to="/login" className="text-sm font-medium text-[var(--color-text)]">
-          Connexion
-        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeToggle className="hover:bg-[var(--color-surface)]" />
+          <Link to="/login" className="text-sm font-medium text-[var(--color-text)]">
+            Connexion
+          </Link>
+        </div>
       </div>
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col lg:max-w-5xl">

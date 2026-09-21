@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { ThemeToggle } from '../components/ThemeToggle'
 import {
   apiFetch,
   apiJson,
@@ -8,9 +9,11 @@ import {
   extractErrorMessage,
   type AccountResponse,
 } from '../lib/apiClient'
+import { useTheme } from '../theme/ThemeContext'
 
 export function AccountPage() {
   const { refreshUser } = useAuth()
+  const { theme } = useTheme()
 
   const [account, setAccount] = useState<AccountResponse | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -299,6 +302,16 @@ export function AccountPage() {
           {isSavingPassword ? 'Enregistrement...' : 'Changer le mot de passe'}
         </button>
       </form>
+
+      <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-6 lg:rounded-2xl lg:border lg:bg-[var(--color-surface)] lg:p-6">
+        <div>
+          <h2 className="font-semibold">Apparence</h2>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            Thème {theme === 'dark' ? 'sombre' : 'clair'}
+          </p>
+        </div>
+        <ThemeToggle className="border border-[var(--color-border)] hover:bg-[var(--color-bg)]" />
+      </div>
       </div>
       </div>
     </main>

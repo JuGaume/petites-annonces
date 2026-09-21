@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { ThemeToggle } from './ThemeToggle'
 
 /**
  * Barre de navigation persistante pour le desktop (>= lg). Le mobile garde son propre
@@ -74,6 +75,7 @@ export function AppHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle className="hover:bg-[var(--color-bg)]" />
           <Link to="/account" className="flex items-center gap-2 rounded-[var(--radius-pill)] py-1 pl-1 pr-3 hover:bg-[var(--color-bg)]">
             {user.photoUrl ? (
               <img src={user.photoUrl} alt="" className="h-7 w-7 rounded-full object-cover" />

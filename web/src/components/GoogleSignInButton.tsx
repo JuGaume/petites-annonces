@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import { useTheme } from '../theme/ThemeContext'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
 
@@ -27,6 +28,7 @@ declare global {
 export function GoogleSignInButton() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { loginWithGoogle } = useAuth()
+  const { theme } = useTheme()
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID || !containerRef.current) {
@@ -44,9 +46,11 @@ export function GoogleSignInButton() {
         },
       })
       if (containerRef.current) {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        // Widget Google : son propre thème ne suit pas le CSS de l'appli, on le
+        // recale sur le thème choisi (pas la préférence système) à chaque bascule.
+        containerRef.current.innerHTML = ''
         window.google?.accounts.id.renderButton(containerRef.current, {
-          theme: isDark ? 'filled_black' : 'outline',
+          theme: theme === 'dark' ? 'filled_black' : 'outline',
           size: 'large',
           width: 300,
         })
@@ -69,7 +73,7 @@ export function GoogleSignInButton() {
     script.async = true
     script.onload = renderButton
     document.body.appendChild(script)
-  }, [loginWithGoogle])
+  }, [loginWithGoogle, theme])
 
   if (!GOOGLE_CLIENT_ID) {
     return null
